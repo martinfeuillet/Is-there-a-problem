@@ -322,3 +322,13 @@ class itap_IsThereAProblem {
 }
 
 $isThereAProblem = new itap_IsThereAProblem();
+
+require 'plugin-update-checker-master/plugin-update-checker.php';
+$myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
+    'https://github.com/martinfeuillet/Is-there-a-problem',
+    __FILE__, //Full path to the main plugin file or functions.php.
+    'is_there_a_problem'
+);
+
+//Set the branch that contains the stable release.
+$myUpdateChecker->setBranch('master');

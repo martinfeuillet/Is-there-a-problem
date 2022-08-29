@@ -1,21 +1,18 @@
 {
 	"name": "Is there a problem",
 	"version": "1.0.5",
-	"download_url": "http://example.com/updates/example-plugin.zip",
+	"download_url": "https://github.com/martinfeuillet/Is-there-a-problem",
 
 	"homepage": "http://example.com/",
-	"requires": "4.5",
-	"tested": "4.8",
-	"last_updated": "2017-01-01 16:17:00",
+	"requires": "7.4",
+	"tested": "6.0.1",
+	"last_updated": "2022-08-29 00:00:00",
 	"upgrade_notice": "Here's why you should upgrade...",
 
-	"author": "Janis Elsts",
-	"author_homepage": "http://example.com/",
+	"author": "Martin FEUILLET",
+	"author_homepage": "https://ingenius.agency/",
 
 	"sections": {
-		"description": "(Required) Plugin description. Basic HTML can be used in all sections.",
-		"installation": "(Recommended) Installation instructions.",
-		"changelog": "(Recommended) Changelog. <p>This section will be displayed by default when the user clicks 'View version x.y.z details'.</p>",
-		"custom_section": "This is a custom section labeled 'Custom Section'."
+		"description": "simple plugin that help integrator to respect the standards of SEO."
 	}
 }
