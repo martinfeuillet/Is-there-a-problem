@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.0.6
+  Version: 1.0.7
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -225,13 +225,13 @@ class itap_IsThereAProblem {
             //trouver tous les liens dans la description produit
             preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $product->get_description(), $matches);
             $check = 0;
-            foreach ($matches as $match) {
+            foreach ($matches[1] as $match) {
                 if ($match != null) {
                     $check++;
                 }
             }
             preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $product->get_short_description(), $matches);
-            foreach ($matches as $match) {
+            foreach ($matches[1] as $match) {
                 if ($match != null) {
                     $check++;
                 }
