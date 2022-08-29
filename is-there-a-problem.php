@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.0.7
+  Version: 1.0.8
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -70,7 +70,7 @@ class itap_IsThereAProblem {
             )
         );
 ?>
-        <tr <?php echo esc_attr($danger ? "style='background-color:$danger; color:white';" : '') ?>>
+        <tr <?php echo esc_attr($danger ? "style=background-color:$danger; color:white;" : '') ?>>
             <td><?php echo esc_html($error['id']) ?></td>
             <td><?php echo esc_html($error['title']) ?></td>
             <td><a target="_blank" <?php echo esc_attr($danger ? "style='color:white'" : '') ?> href="<?php echo esc_url($error['url_edit']) ?>">click</a></td>
