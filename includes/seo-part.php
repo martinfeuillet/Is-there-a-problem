@@ -144,43 +144,45 @@ function itap_get_errors_below_category_content() {
     }
     return $errors;
 }
+
+if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') :
 ?>
+    <div class="wrap is-there-a-problem-container">
+        <p>Problèmes liés au référencement naturel</p>
 
-
-<div class="wrap is-there-a-problem-container">
-    <p>Problèmes liés au référencement naturel</p>
-
-    <table class="table-plugin">
-        <thead>
-            <tr class="thead-plugin">
-                <th>Id </th>
-                <th>Nom</th>
-                <th>Url</th>
-                <th>Problème remonté</th>
-            </tr>
-        </thead>
-        <tbody class="tbody-plugin">
-            <?php
-            $noDescription = itap_get_errors_no_categories_description();
-            if (count($noDescription) > 0) {
-                foreach ($noDescription as $category) {
-                    itap_seoDisplayTab($category);
+        <table class="table-plugin">
+            <thead>
+                <tr class="thead-plugin">
+                    <th>Id </th>
+                    <th>Nom</th>
+                    <th>Url</th>
+                    <th>Problème remonté</th>
+                </tr>
+            </thead>
+            <tbody class="tbody-plugin">
+                <?php
+                $noDescription = itap_get_errors_no_categories_description();
+                if (count($noDescription) > 0) {
+                    foreach ($noDescription as $category) {
+                        itap_seoDisplayTab($category);
+                    }
                 }
-            }
-            $noBelowContent = itap_get_errors_below_category_content();
-            if (count($noBelowContent) > 0) {
-                foreach ($noBelowContent as $category) {
-                    itap_seoDisplayTab($category);
+                $noBelowContent = itap_get_errors_below_category_content();
+                if (count($noBelowContent) > 0) {
+                    foreach ($noBelowContent as $category) {
+                        itap_seoDisplayTab($category);
+                    }
                 }
-            }
-            $noAttributesDescription = itap_get_errors_no_tags_description();
-            if (count($noAttributesDescription) > 0) {
-                foreach ($noAttributesDescription as $category) {
-                    itap_seoDisplayTab($category);
+                $noAttributesDescription = itap_get_errors_no_tags_description();
+                if (count($noAttributesDescription) > 0) {
+                    foreach ($noAttributesDescription as $category) {
+                        itap_seoDisplayTab($category);
+                    }
                 }
-            }
-            ?>
-        </tbody>
-    </table>
-</div>
+                ?>
+            </tbody>
+        </table>
+    </div>
 <?php
+endif;
+?>

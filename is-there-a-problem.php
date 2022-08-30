@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.0.9
+  Version: 1.0.10
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -33,13 +33,17 @@ class itap_IsThereAProblem {
     }
 
     function itap_add_menu() {
-        $results = $this->itap_getAllInfosFromProduct();
-        $errorsAlt = $this->itap_getErrorFromBaliseAlt($results);
-        $errorsVariable = $this->itap_getErrorFromVariableProducts($results);
-        $errorsImage = $this->itap_getErrorsFromImages($results);
-        $errorsRankMath = $this->itap_getErrorsFromRankMath($results);
-        $errorsLink = $this->itap_getErrorsFromLinks($results);
-        $notification_count = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink);
+        // only if we are on plugin page, call all the functions
+        if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
+            $results = $this->itap_getAllInfosFromProduct();
+            $errorsAlt = $this->itap_getErrorFromBaliseAlt($results);
+            $errorsVariable = $this->itap_getErrorFromVariableProducts($results);
+            $errorsImage = $this->itap_getErrorsFromImages($results);
+            $errorsRankMath = $this->itap_getErrorsFromRankMath($results);
+            $errorsLink = $this->itap_getErrorsFromLinks($results);
+            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink);
+        }
+        $notification_count = $countErrors ?? null;
         add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'manage_options', 'is_there_a_problem', array($this, 'page'), 'dashicons-admin-site', 100);
         add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'manage_options', 'is_there_a_problem', array($this, 'page'));
         add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'manage_options', 'is_there_a_problem_seo', function () {
@@ -68,8 +72,7 @@ class itap_IsThereAProblem {
             'span' => array(
                 'class' => array()
             )
-        );
-?>
+        ); ?>
         <tr <?php echo esc_attr($danger ? "style=background-color:$danger;color:white;" : '') ?>>
             <td><?php echo esc_html($error['id']) ?></td>
             <td><?php echo esc_html($error['title']) ?></td>
@@ -77,7 +80,7 @@ class itap_IsThereAProblem {
             <td><?php echo wp_kses($error['error'], $allowed_html) ?></td>
             <td><?php echo esc_html($error['author_name']) ?></td>
         </tr>
-    <?php
+        <?php
     }
 
     function itap_getAllInfosFromProduct() {
@@ -147,13 +150,14 @@ class itap_IsThereAProblem {
                         array_push($attribute_variation, $attribute);
                     }
                 }
-                // check if the terms of attribute 'pa_couleur' are in the list of colors
+                // check if the terms of attribute 'pa_couleur' or 'couleur are in the list of colors
                 foreach ($attribute_variation as $attribute) {
                     $attribute_name = $attribute['name'];
-                    $attribute_value = $terms[$attribute_name];
-                    if (!in_array($attribute_value, $couleurs) && ($attribute_name == 'pa_couleur' || $attribute_name == 'couleur') && $attribute['variation']) {
-                        $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(", ", $couleurs) . '</span></div>');
-                        array_push($errors, $error);
+                    if ($attribute_name == 'pa_couleur' || $attribute_name == 'couleur') {
+                        if (!in_array($terms[$attribute['name']], $couleurs) &&  $attribute['variation']) {
+                            $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(", ", $couleurs) . '</span></div>');
+                            array_push($errors, $error);
+                        }
                     }
                 }
                 if (count($attribute_variation) != count($product->default_attributes)) {
@@ -252,76 +256,79 @@ class itap_IsThereAProblem {
             }
         }
     }
-    // '#DC3444'
     function page() {
-    ?>
-        <div class="wrap is-there-a-problem-container">
-            <p>Problèmes d'intégration</p>
+        if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
+        ?>
+            <div class="wrap is-there-a-problem-container">
+                <p>Problèmes d'intégration</p>
 
-            <div class="form-tri">
-                <p>Trier par intégrateur</p>
-                <form action="?page=is_there_a_problem" method="GET">
-                    <div class="bloc-form">
-                        <div>
-                            <input type="hidden" name="page" value="is_there_a_problem">
-                            <select name="author_name" id="author_name">
-                                <option value="">choisissez votre nom d'utilisateur</option>
-                                <option value="">Erreurs générales</option>
-                                <?php
-                                $users = get_users();
-                                foreach ($users as $user) {
-                                ?>
-                                    <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
-                                <?php
-                                }
-                                ?>
-                            </select>
-                            <button type="submit" value="Rechercher">Rechercher</button>
+                <div class="form-tri">
+                    <p>Trier par intégrateur</p>
+                    <form action="?page=is_there_a_problem" method="GET">
+                        <div class="bloc-form">
+                            <div>
+                                <input type="hidden" name="page" value="is_there_a_problem">
+                                <select name="author_name" id="author_name">
+                                    <option value="">choisissez votre nom d'utilisateur</option>
+                                    <option value="">Erreurs générales</option>
+                                    <?php
+                                    $users = get_users();
+                                    foreach ($users as $user) {
+                                    ?>
+                                        <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
+                                    <?php
+                                    }
+                                    ?>
+                                </select>
+                                <button type="submit" value="Rechercher">Rechercher</button>
+                            </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
+                <table class="table-plugin">
+                    <thead>
+                        <tr class="thead-plugin">
+                            <th class="thead-plugin-little">Id Produit</th>
+                            <th class="thead-plugin-middle">Nom Produit</th>
+                            <th class="thead-plugin-little">Url Produit</th>
+                            <th class="thead-plugin-big">Problème remonté</th>
+                            <th class="thead-plugin-little">Nom intégrateur</th>
+                        </tr>
+                    </thead>
+                    <tbody class="tbody-plugin">
+                        <?php
+
+                        // filter data by integrator
+                        if (!empty($_GET['author_name'])) {
+                            $results = $this->itap_getAllInfosFromProduct();
+                            $results = array_filter($results, function ($result) {
+                                return $result['author_name'] == $_GET['author_name'];
+                            });
+                        } else {
+                            $results = $this->itap_getAllInfosFromProduct();
+                        }
+                        // echo errors from all rules
+                        $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
+                        $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
+                        $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
+                        $this->itap_getErrors('itap_getErrorsFromImages', $results);
+                        $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
+                        if (count($this->itap_getErrorsFromLinks($results)) == 0 && count($this->itap_getErrorFromBaliseAlt($results)) == 0 && count($this->itap_getErrorFromVariableProducts($results)) == 0 && count($this->itap_getErrorsFromImages($results)) == 0 && count($this->itap_getErrorsFromRankMath($results)) == 0) {
+                            echo esc_html("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>");
+                        }
+                        ?>
+
+                    </tbody>
+                </table>
             </div>
-            <table class="table-plugin">
-                <thead>
-                    <tr class="thead-plugin">
-                        <th class="thead-plugin-little">Id Produit</th>
-                        <th class="thead-plugin-middle">Nom Produit</th>
-                        <th class="thead-plugin-little">Url Produit</th>
-                        <th class="thead-plugin-big">Problème remonté</th>
-                        <th class="thead-plugin-little">Nom intégrateur</th>
-                    </tr>
-                </thead>
-                <tbody class="tbody-plugin">
-                    <?php
-
-                    // filter data by integrator
-                    if (!empty($_GET['author_name'])) {
-                        $results = $this->itap_getAllInfosFromProduct();
-                        $results = array_filter($results, function ($result) {
-                            return $result['author_name'] == $_GET['author_name'];
-                        });
-                    } else {
-                        $results = $this->itap_getAllInfosFromProduct();
-                    }
-                    // echo errors from all rules
-                    $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
-                    $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
-                    $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
-                    $this->itap_getErrors('itap_getErrorsFromImages', $results);
-                    $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
-                    if (count($this->itap_getErrorsFromLinks($results)) == 0 && count($this->itap_getErrorFromBaliseAlt($results)) == 0 && count($this->itap_getErrorFromVariableProducts($results)) == 0 && count($this->itap_getErrorsFromImages($results)) == 0 && count($this->itap_getErrorsFromRankMath($results)) == 0) {
-                        echo esc_html("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>");
-                    }
-                    ?>
-
-                </tbody>
-            </table>
-        </div>
 <?php
+        }
     }
 }
 
-$isThereAProblem = new itap_IsThereAProblem();
+if (is_admin()) {
+    $isThereAProblem = new itap_IsThereAProblem();
+}
 
 require 'plugin-update-checker-master/plugin-update-checker.php';
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
