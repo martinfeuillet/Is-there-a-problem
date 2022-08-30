@@ -25,12 +25,44 @@ class itap_IsThereAProblem {
     function __construct() {
         add_action('admin_menu', array($this, 'itap_add_menu'));
         add_action('admin_enqueue_scripts', array($this, 'itap_enqueue'));
+        // ajax call
+        add_action("wp_ajax_get_checkbox_value", array($this, "itap_send_archive_to_db"));
+        add_action("wp_ajax_delete_checkbox_value", array($this, "itap_delete_archive"));
     }
 
     function itap_enqueue() {
         wp_enqueue_style('isthereaproblem', plugins_url('admin/isthereaproblem.css', __FILE__));
-        // wp_enqueue_script('isthereaproblem', plugins_url('isthereaproblem.js', __FILE__), array('jquery'));
+        wp_enqueue_script('isthereaproblemJS', plugins_url('admin/isThereAProblem.js', __FILE__), array('jquery'), false, true);
+        wp_localize_script('isthereaproblemJS', 'my_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
     }
+
+    function itap_send_archive_to_db() {
+        global $wpdb;
+        $uniqId = $_POST['uniqId'];
+        $table_name = $wpdb->prefix . 'itap_archive';
+        // create table if not exist
+        $charset_collate = $wpdb->get_charset_collate();
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            uniqId varchar(255) NOT NULL,
+            PRIMARY KEY  (id)
+        ) $charset_collate;";
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+        $wpdb->insert($table_name, array(
+            'uniqId' => $uniqId,
+        ));
+        wp_die();
+    }
+
+    function itap_delete_archive() {
+        global $wpdb;
+        $uniqId = $_POST['uniqId'];
+        $table_name = $wpdb->prefix . 'itap_archive';
+        $wpdb->delete($table_name, array('uniqId' => $uniqId));
+        wp_die();
+    }
+
 
     function itap_add_menu() {
         // only if we are on plugin page, call all the functions
@@ -41,18 +73,20 @@ class itap_IsThereAProblem {
             $errorsImage = $this->itap_getErrorsFromImages($results);
             $errorsRankMath = $this->itap_getErrorsFromRankMath($results);
             $errorsLink = $this->itap_getErrorsFromLinks($results);
-            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink);
+            $errorsDescriptions = $this->itap_getErrorsFromDescriptions($results);
+            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink) + count($errorsDescriptions);
         }
         $notification_count = $countErrors ?? null;
-        add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'manage_options', 'is_there_a_problem', array($this, 'page'), 'dashicons-admin-site', 100);
-        add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'manage_options', 'is_there_a_problem', array($this, 'page'));
+        add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'manage_options', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
+        add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'manage_options', 'is_there_a_problem', array($this, 'itap_page'));
         add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'manage_options', 'is_there_a_problem_seo', function () {
             include "includes/seo-part.php";
         });
     }
 
-    function itap_displayData($result, string $problem) {
+    function itap_displayData($result, string $problem, string $codeError) {
         return array(
+            'uniqId' => $result['id'] . $codeError,
             'id' => $result['id'],
             'title' => $result['title'],
             'url' => $result['url'],
@@ -79,6 +113,7 @@ class itap_IsThereAProblem {
             <td><a target="_blank" <?php echo esc_attr($danger ? "style='color:white'" : '') ?> href="<?php echo esc_url($error['url_edit']) ?>">click</a></td>
             <td><?php echo wp_kses($error['error'], $allowed_html) ?></td>
             <td><?php echo esc_html($error['author_name']) ?></td>
+            <td><input type="checkbox" class="itap_checkbox" name="archiver" class="archiver" value="<?php echo $error['uniqId'] ?>"></td>
         </tr>
         <?php
     }
@@ -112,10 +147,10 @@ class itap_IsThereAProblem {
         $errors = [];
         foreach ($results as $result) {
             if ($result['alt'] == '') {
-                $error = $this->itap_displayData($result, 'Balise alt vide');
+                $error = $this->itap_displayData($result, 'Balise alt vide', '1001');
                 array_push($errors, $error);
             } elseif (strlen($result['alt']) < 10) {
-                $error = $this->itap_displayData($result, 'Balise alt trop courte');
+                $error = $this->itap_displayData($result, 'Balise alt trop courte', '1002');
                 array_push($errors, $error);
             }
         }
@@ -127,21 +162,21 @@ class itap_IsThereAProblem {
         $couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
-            $color_attributes = explode(', ', strtolower($product->get_attribute('couleur')));
             // check the attributes of the product to know if the default variation is first element of each attribute
             $attribute_names = $product->get_attributes();
-
             $terms = [];
-            foreach ($attribute_names as $attribute_name => $attribute) {
-                if ($attribute->is_taxonomy() && $attribute['variation']) {
-                    $terms[$attribute_name] = wc_get_product_terms($result['id'], $attribute['name'], array('fields' => 'slugs'))[0];
+            if ($attribute_names) {
+                foreach ($attribute_names as $attribute_name => $attribute) {
+                    if ($attribute->is_taxonomy() && $attribute['variation']) {
+                        $terms[$attribute_name] = wc_get_product_terms($result['id'], $attribute['name'], array('fields' => 'slugs'))[0] ?? null;
+                    }
                 }
             }
 
             // check if the product has variations
             if ($product->is_type('variable')) {
                 if (!$product->default_attributes) {
-                    $error = $this->itap_displayData($result, 'Produit variable qui n\'a pas de produit par défaut');
+                    $error = $this->itap_displayData($result, "Produit variable qui n'a pas de produit par défaut", '1003');
                     array_push($errors, $error);
                 }
                 $attribute_variation = [];
@@ -155,27 +190,23 @@ class itap_IsThereAProblem {
                     $attribute_name = $attribute['name'];
                     if ($attribute_name == 'pa_couleur' || $attribute_name == 'couleur') {
                         if (!in_array($terms[$attribute['name']], $couleurs) &&  $attribute['variation']) {
-                            $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(", ", $couleurs) . '</span></div>');
+                            $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(", ", $couleurs) . '</span></div>', '1004');
                             array_push($errors, $error);
                         }
                     }
                 }
                 if (count($attribute_variation) != count($product->default_attributes)) {
-                    $error = $this->itap_displayData($result, 'Produit variable ou il manque une ou plusieurs variations dans le produit par défaut');
+                    $error = $this->itap_displayData($result, 'Produit variable ou il manque une ou plusieurs variations dans le produit par défaut', '1005');
                     array_push($errors, $error);
                 }
                 if (array_diff($product->default_attributes, $terms)) {
-                    $error = $this->itap_displayData($result, 'Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class="tooltip">catégories<span class="tooltiptext">Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l\'onglet attribut de produit</span></div>. ');
+                    $error = $this->itap_displayData($result, 'Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class="tooltip">catégories<span class="tooltiptext">Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l\'onglet attribut de produit</span></div>. ', '1006');
                     array_push($errors, $error);
                 }
                 if (count($product->get_children()) == 0) {
-                    $error = $this->itap_displayData($result, 'Produit variable qui n\'a pas de variations, ajoutez en ou passez le en produit simple');
+                    $error = $this->itap_displayData($result, 'Produit variable qui n\'a pas de variations, ajoutez en ou passez le en produit simple', '1007');
                     array_push($errors, $error);
                 }
-                // if (array_intersect($color_attributes, $couleurs) != $color_attributes) {
-                //     $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(", ", $couleurs) . '</span></div>');
-                //     array_push($errors, $error);
-                // }
             }
         }
         return $errors;
@@ -188,10 +219,10 @@ class itap_IsThereAProblem {
             $image_id = get_post_thumbnail_id($result['id']);
             $errors_image = 0;
             if ($image_id == 0) {
-                $error = $this->itap_displayData($result, 'Produit sans images');
+                $error = $this->itap_displayData($result, 'Produit sans images', '1008');
                 array_push($errors, $error);
             } else {
-                $image_metadata = get_post_meta($image_id, '_wp_attachment_metadata', true);
+                $image_metadata = get_post_meta($image_id, '_wp_attachment_metadata', 'true');
                 $upload_dir = wp_upload_dir()['basedir'];
                 $base_path = substr($image_metadata['file'], 0, 8);
                 $image_path = $upload_dir . '/' . $base_path;
@@ -201,7 +232,7 @@ class itap_IsThereAProblem {
                     }
                 }
                 if ($errors_image > 0) {
-                    $error = $this->itap_displayData($result, 'Formats d\'images manquants/non créés par WordPress pour WooCommerce, merci de réuploader l\'image du produit');
+                    $error = $this->itap_displayData($result, 'Formats d\'images manquants/non créés par WordPress pour WooCommerce, merci de réuploader l\'image du produit', '1009');
                     array_push($errors, $error);
                 }
             }
@@ -215,7 +246,7 @@ class itap_IsThereAProblem {
 
             $product = wc_get_product($result['id']);
             if ($product->get_meta('rank_math_description') == '') {
-                $error = $this->itap_displayData($result, 'Produit associé à Rank Math qui n\'a pas de meta description');
+                $error = $this->itap_displayData($result, 'Produit associé à Rank Math qui n\'a pas de meta description', '1010');
                 array_push($errors, $error);
             }
         }
@@ -226,6 +257,15 @@ class itap_IsThereAProblem {
         $errors = [];
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
+            // get categories of the product
+            $categories = wp_get_post_terms($result['id'], 'product_cat', array('fields' => 'slugs'));
+            // get the slug of the product
+            $slug = $product->get_slug();
+            // check if the slug of the product is in the list of categories
+            if (in_array($slug, $categories)) {
+                $error = $this->itap_displayData($result, 'le slug d\'un produit ne peut pas être le même qu\'une de ses catégories', '1011');
+                array_push($errors, $error);
+            }
             //trouver tous les liens dans la description produit
             preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $product->get_description(), $matches);
             $check = 0;
@@ -241,7 +281,23 @@ class itap_IsThereAProblem {
                 }
             }
             if ($check != 0) {
-                $error = $this->itap_displayData($result, 'Description du produit qui contient un lien');
+                $error = $this->itap_displayData($result, 'Description du produit qui contient un lien', '1012');
+                array_push($errors, $error);
+            }
+        }
+        return $errors;
+    }
+
+    function itap_getErrorsFromDescriptions($result) {
+        // check if the description of the product is less than 200 words
+        $errors = [];
+        foreach ($result as $result) {
+            $product = wc_get_product($result['id']);
+            $description1 = $product->get_meta("description-1");
+            $description2 = $product->get_meta("description-2");
+            $short_description = $product->get_short_description();
+            if (str_word_count($description1) + str_word_count($description2) + str_word_count($short_description) < 200) {
+                $error = $this->itap_displayData($result, 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
                 array_push($errors, $error);
             }
         }
@@ -249,14 +305,21 @@ class itap_IsThereAProblem {
     }
 
     function itap_getErrors($fn, $results, $color = null) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'itap_archive';
+        // select uniqId from the itap_archive table
+        $uniqIds = $wpdb->get_results("SELECT uniqId FROM $table_name ORDER BY id ", ARRAY_A);
         $errors = $this->$fn($results);
         if (count($errors) > 0) {
             foreach ($errors as $error) {
-                $this->itap_displayTab($error, $color);
+                if (!in_array(['uniqId' => $error['uniqId']], $uniqIds)) {
+                    $this->itap_displayTab($error, $color);
+                }                // check if the $errors[uniqId] is already in the associative array
             }
         }
     }
-    function page() {
+
+    function itap_page() {
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
         ?>
             <div class="wrap is-there-a-problem-container">
@@ -293,6 +356,7 @@ class itap_IsThereAProblem {
                             <th class="thead-plugin-little">Url Produit</th>
                             <th class="thead-plugin-big">Problème remonté</th>
                             <th class="thead-plugin-little">Nom intégrateur</th>
+                            <th class="thead-plugin-little">archiver</th>
                         </tr>
                     </thead>
                     <tbody class="tbody-plugin">
@@ -313,7 +377,8 @@ class itap_IsThereAProblem {
                         $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
                         $this->itap_getErrors('itap_getErrorsFromImages', $results);
                         $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
-                        if (count($this->itap_getErrorsFromLinks($results)) == 0 && count($this->itap_getErrorFromBaliseAlt($results)) == 0 && count($this->itap_getErrorFromVariableProducts($results)) == 0 && count($this->itap_getErrorsFromImages($results)) == 0 && count($this->itap_getErrorsFromRankMath($results)) == 0) {
+                        $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+                        if (count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) == 0) {
                             echo esc_html("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>");
                         }
                         ?>

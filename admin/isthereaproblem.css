@@ -129,3 +129,7 @@
 .thead-plugin-big {
     width: auto;
 }
+
+.itap_checkbox {
+    transform: scale(1.5);
+}

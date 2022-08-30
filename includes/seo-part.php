@@ -101,6 +101,11 @@ function itap_get_errors_below_category_content() {
                 $error = itap_seoDisplayData($category, 'Catégorie qui ne contient pas de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                 array_push($errors, $error);
             }
+            // check if content have less than 800 words
+            if (str_word_count($content) < 800) {
+                $error = itap_seoDisplayData($category, 'Catégorie qui contient moins de 800 mots dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
+                array_push($errors, $error);
+            }
             //check if links in description below category are directed to equal or child category
             if (!empty($content) && count($matches[0]) > 0) {
                 foreach ($matches[0] as $match) {
