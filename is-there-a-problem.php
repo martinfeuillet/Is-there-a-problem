@@ -86,7 +86,7 @@ class itap_IsThereAProblem {
         add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'manage_options', 'is_there_a_problem_seo', function () {
             include "includes/seo-part.php";
         });
-        add_submenu_page('is_there_a_problem', 'archive ', 'archive', 'manage_options', 'is_there_a_problem_archive', function () {
+        add_submenu_page('is_there_a_problem', 'Archive ', 'Archive', 'manage_options', 'is_there_a_problem_archive', function () {
             include "includes/archive-part.php";
         });
     }
