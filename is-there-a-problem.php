@@ -82,6 +82,9 @@ class itap_IsThereAProblem {
         add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'manage_options', 'is_there_a_problem_seo', function () {
             include "includes/seo-part.php";
         });
+        add_submenu_page('is_there_a_problem', 'archive ', 'archive', 'manage_options', 'is_there_a_problem_archive', function () {
+            include "includes/archive-part.php";
+        });
     }
 
     function itap_displayData($result, string $problem, string $codeError) {
@@ -107,13 +110,13 @@ class itap_IsThereAProblem {
                 'class' => array()
             )
         ); ?>
-        <tr <?php echo esc_attr($danger ? "style=background-color:$danger;color:white;" : '') ?>>
-            <td><?php echo esc_html($error['id']) ?></td>
-            <td><?php echo esc_html($error['title']) ?></td>
-            <td><a target="_blank" <?php echo esc_attr($danger ? "style='color:white'" : '') ?> href="<?php echo esc_url($error['url_edit']) ?>">click</a></td>
-            <td><?php echo wp_kses($error['error'], $allowed_html) ?></td>
-            <td><?php echo esc_html($error['author_name']) ?></td>
-            <td><input type="checkbox" class="itap_checkbox" name="archiver" class="archiver" value="<?php echo $error['uniqId'] ?>"></td>
+        <tr <?php echo esc_attr($danger ? "style=background-color:$danger;color:white;" : ''); ?>>
+            <td><?php echo esc_html($error['id']); ?></td>
+            <td><?php echo esc_html($error['title']); ?></td>
+            <td><a target="_blank" <?php echo esc_attr($danger ? "style='color:white'" : '') ?> href="<?php echo esc_url($error['url_edit']); ?>">click</a></td>
+            <td><?php echo wp_kses($error['error'], $allowed_html); ?></td>
+            <td><?php echo esc_html($error['author_name']); ?></td>
+            <td><input type="checkbox" class="itap_checkbox" name="archiver" class="archiver" value="<?php echo esc_attr($error['uniqId']); ?>"></td>
         </tr>
         <?php
     }
@@ -304,6 +307,10 @@ class itap_IsThereAProblem {
         return $errors;
     }
 
+
+    /**
+     * Display the results if they aren't archived
+     */
     function itap_getErrors($fn, $results, $color = null) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'itap_archive';
@@ -314,7 +321,7 @@ class itap_IsThereAProblem {
             foreach ($errors as $error) {
                 if (!in_array(['uniqId' => $error['uniqId']], $uniqIds)) {
                     $this->itap_displayTab($error, $color);
-                }                // check if the $errors[uniqId] is already in the associative array
+                }
             }
         }
     }
@@ -343,7 +350,7 @@ class itap_IsThereAProblem {
                                     }
                                     ?>
                                 </select>
-                                <button type="submit" value="Rechercher">Rechercher</button>
+                                <button type="submit" class="itap_button" value="Rechercher">Rechercher</button>
                             </div>
                         </div>
                     </form>

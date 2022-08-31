@@ -22,7 +22,7 @@
     flex-direction: column;
 }
 
-.form-tri button {
+.itap_button {
     background-color: #515c8d;
     padding: 1rem;
     cursor: pointer;
@@ -35,7 +35,7 @@
 .form-tri label {
     font-weight: 500;
 }
-.form-tri button:hover {
+.itap_button:hover {
     background-color: #4d62c2;
 }
 
