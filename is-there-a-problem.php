@@ -66,6 +66,10 @@ class itap_IsThereAProblem {
 
     function itap_add_menu() {
         // only if we are on plugin page, call all the functions
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'itap_archive';
+        $sql = "SELECT count(*) FROM $table_name";
+        $archives = $wpdb->get_var($sql);
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
             $results = $this->itap_getAllInfosFromProduct();
             $errorsAlt = $this->itap_getErrorFromBaliseAlt($results);
@@ -74,7 +78,7 @@ class itap_IsThereAProblem {
             $errorsRankMath = $this->itap_getErrorsFromRankMath($results);
             $errorsLink = $this->itap_getErrorsFromLinks($results);
             $errorsDescriptions = $this->itap_getErrorsFromDescriptions($results);
-            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink) + count($errorsDescriptions);
+            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink) + count($errorsDescriptions) - $archives;
         }
         $notification_count = $countErrors ?? null;
         add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'manage_options', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
