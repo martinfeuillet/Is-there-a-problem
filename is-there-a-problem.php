@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.0.10
+  Version: 1.1.0
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
