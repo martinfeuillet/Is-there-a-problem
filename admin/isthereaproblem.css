@@ -6,7 +6,7 @@
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
 }
 
-.is-there-a-problem-container > p {
+.is-there-a-problem-container p:first-child {
     font-size: 2rem;
     margin-bottom: 1rem;
     margin-top: 0.5rem;
@@ -132,4 +132,8 @@
 
 .itap_checkbox {
     transform: scale(1.5);
+}
+
+.problems_number {
+    font-size: 1.5rem;
 }

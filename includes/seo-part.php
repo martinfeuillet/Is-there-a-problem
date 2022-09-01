@@ -154,6 +154,7 @@ if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') :
 ?>
     <div class="wrap is-there-a-problem-container">
         <p>Problèmes liés au référencement naturel</p>
+        <p class="problems_number">nombre de problèmes : <?php echo count(itap_get_errors_no_categories_description()) + count(itap_get_errors_no_tags_description()) + count(itap_get_errors_below_category_content()) ?></p>
 
         <table class="table-plugin">
             <thead>

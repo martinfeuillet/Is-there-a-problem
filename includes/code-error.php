@@ -14,6 +14,6 @@ $codeErrorFile = array(
     '1009' => "Formats d'images manquants/non créés par WordPress pour WooCommerce, merci de réuploader l'image du produit",
     '1010' => "Produit associé à Rank Math qui n'a pas de meta description",
     '1011' => "le slug d'un produit ne peut pas être le même qu'une de ses catégories",
-    '1012' => "Description du produit qui contient un lien",
+    '1012' => "Description-1 ou description-2 ou description principale ou description courte du produit qui contient un lien",
     '1013' => "Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu",
 );

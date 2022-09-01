@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.1.1
+  Version: 1.1.4
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -22,6 +22,10 @@ if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get
 }
 
 class itap_IsThereAProblem {
+    public $lines = 0;
+
+    public $globalErrors = 0;
+
     function __construct() {
         add_action('admin_menu', array($this, 'itap_add_menu'));
         add_action('admin_enqueue_scripts', array($this, 'itap_enqueue'));
@@ -268,27 +272,24 @@ class itap_IsThereAProblem {
             $categories = wp_get_post_terms($result['id'], 'product_cat', array('fields' => 'slugs'));
             // get the slug of the product
             $slug = $product->get_slug();
+
             // check if the slug of the product is in the list of categories
             if (in_array($slug, $categories)) {
                 $error = $this->itap_displayData($result, 'le slug d\'un produit ne peut pas être le même qu\'une de ses catégories', '1011');
                 array_push($errors, $error);
             }
-            //trouver tous les liens dans la description produit
-            preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $product->get_description(), $matches);
-            $check = 0;
-            foreach ($matches[1] as $match) {
-                if ($match != null) {
-                    $check++;
-                }
-            }
-            preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $product->get_short_description(), $matches);
-            foreach ($matches[1] as $match) {
-                if ($match != null) {
-                    $check++;
-                }
-            }
-            if ($check != 0) {
-                $error = $this->itap_displayData($result, 'Description du produit qui contient un lien', '1012');
+            $description1 = $product->get_meta("description-1") ?? null;
+            $description2 = $product->get_meta("description-2") ?? null;
+            $main_description = $product->get_description();
+            $short_description = $product->get_short_description();
+            $all_description = array($description1, $description2, $main_description, $short_description);
+            $link_description = array_filter($all_description, function ($value) {
+                preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $value, $matches);
+                return count($matches[1]) > 0;
+            });
+
+            if (count($link_description) > 0) {
+                $error = $this->itap_displayData($result, 'Description-1 ou description-2 ou description principale ou description courte du produit qui contient un lien', '1012');
                 array_push($errors, $error);
             }
         }
@@ -300,8 +301,8 @@ class itap_IsThereAProblem {
         $errors = [];
         foreach ($result as $result) {
             $product = wc_get_product($result['id']);
-            $description1 = $product->get_meta("description-1");
-            $description2 = $product->get_meta("description-2");
+            $description1 = $product->get_meta("description-1") ?? null;
+            $description2 = $product->get_meta("description-2") ?? null;
             $short_description = $product->get_short_description();
             if (str_word_count($description1) + str_word_count($description2) + str_word_count($short_description) < 200) {
                 $error = $this->itap_displayData($result, 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
@@ -323,8 +324,9 @@ class itap_IsThereAProblem {
         $errors = $this->$fn($results);
         if (count($errors) > 0) {
             foreach ($errors as $error) {
-                if (!in_array(['uniqId' => $error['uniqId']], $uniqIds)) {
+                if (!in_array(['uniqId' => $error['uniqId']], $uniqIds) && $this->lines < 300) {
                     $this->itap_displayTab($error, $color);
+                    $this->lines++;
                 }
             }
         }
@@ -344,10 +346,10 @@ class itap_IsThereAProblem {
                                 <input type="hidden" name="page" value="is_there_a_problem">
                                 <select name="author_name" id="author_name">
                                     <option value="">choisissez votre nom d'utilisateur</option>
-                                    <option value="">Erreurs générales</option>
                                     <?php
-                                    $users = get_users();
-                                    foreach ($users as $user) {
+                                    //get all admin
+                                    $admins = get_users(array('role' => 'administrator'));
+                                    foreach ($admins as $user) {
                                     ?>
                                         <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
                                     <?php
@@ -382,13 +384,14 @@ class itap_IsThereAProblem {
                         } else {
                             $results = $this->itap_getAllInfosFromProduct();
                         }
-                        // echo errors from all rules
+
                         $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
-                        $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
-                        $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
-                        $this->itap_getErrors('itap_getErrorsFromImages', $results);
-                        $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
-                        $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+                        if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
+                        if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
+                        if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromImages', $results);
+                        if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
+                        if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+
                         if (count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) == 0) {
                             echo esc_html("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>");
                         }
