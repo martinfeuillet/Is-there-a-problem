@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.1.5
+  Version: 1.1.6
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -393,7 +393,7 @@ class itap_IsThereAProblem {
                         if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
 
                         if (count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) == 0) {
-                            echo esc_html("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>");
+                            echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
                         }
                         ?>
 
