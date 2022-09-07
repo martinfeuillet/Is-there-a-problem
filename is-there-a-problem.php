@@ -85,12 +85,12 @@ class itap_IsThereAProblem {
             $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink) + count($errorsDescriptions) - $archives;
         }
         $notification_count = $countErrors ?? null;
-        add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'manage_options', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
-        add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'manage_options', 'is_there_a_problem', array($this, 'itap_page'));
-        add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'manage_options', 'is_there_a_problem_seo', function () {
+        add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
+        add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
+        add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'publish_pages', 'is_there_a_problem_seo', function () {
             include "includes/seo-part.php";
         });
-        add_submenu_page('is_there_a_problem', 'Archive ', 'Archive', 'manage_options', 'is_there_a_problem_archive', function () {
+        add_submenu_page('is_there_a_problem', 'Archive ', 'Archive', 'publish_pages', 'is_there_a_problem_archive', function () {
             include "includes/archive-part.php";
         });
     }
