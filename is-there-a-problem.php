@@ -347,8 +347,8 @@ class itap_IsThereAProblem {
                                 <select name="author_name" id="author_name">
                                     <option value="">choisissez votre nom d'utilisateur</option>
                                     <?php
-                                    //get all admin
-                                    $admins = get_users(array('role' => 'administrator'));
+                                    //get all admin and shop manager
+                                    $admins = get_users(array('role__in' => array('administrator', 'shop_manager')));
                                     foreach ($admins as $user) {
                                     ?>
                                         <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
