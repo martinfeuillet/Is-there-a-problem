@@ -90,7 +90,7 @@ function itap_get_errors_below_category_content() {
         if ($category['name'] != 'Uncategorized') {
             $categoryLink = get_term_link($category['term_id']);
             $categoryPath = substr(parse_url($categoryLink, PHP_URL_PATH), 1);
-            $categoryTab = array_filter(explode('/', $categoryPath));
+            $categoryTab = array_filter(explode('/', $categoryPath)); // actual category
             $content = $category['meta']['below_category_content'][0];
             preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $content, $matches);
             if (empty($content)) {
@@ -111,10 +111,11 @@ function itap_get_errors_below_category_content() {
                 foreach ($matches[0] as $match) {
                     $link = $matches[1][0];
                     $path = substr(parse_url($link, PHP_URL_PATH), 1);
-                    $pathtab = explode('/', $path);
-                    $pathtab = array_filter($pathtab);
-                    $linkCategory = get_term_by('slug', end($pathtab), 'product_cat');
-                    $termActualCategory = get_term_by('slug', end($categoryTab), 'product_cat');
+                    $pathtab = array_filter(explode('/', $path)); //Array([0] => produit,[1] => shirt,[2] => shirt-rouge,[3] => shirt-rouge-bariole)
+                    $last_element_in_url = end($pathtab);
+                    $if_product = get_page_by_path($last_element_in_url, OBJECT, 'product');
+                    $if_category = get_term_by('slug', $last_element_in_url, 'product_cat');
+                    $termActualCategory = get_term_by('slug', end($categoryTab), 'product_cat');  // term_id , name, slug,taxonomy(=product_cat) of the actual category
                     $sameSite = parse_url($link, PHP_URL_HOST) == parse_url(site_url(), PHP_URL_HOST);
                     // check if link is not external
                     if (!$sameSite) {
@@ -122,25 +123,27 @@ function itap_get_errors_below_category_content() {
                         array_push($errors, $error);
                     }
                     if ($sameSite) {
-                        if (!$linkCategory) {
-                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers une catégorie inexistante');
-                            array_push($errors, $error);
+                        // check if link is on a product
+                        if ($if_product) {
+                            if (count($categoryTab) < count($pathtab) && !in_array($termActualCategory->slug, $pathtab)) {
+                                $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers un produit qui n\'est pas dans la même catégorie ou dans une catégorie enfante de la catégorie actuelle ');
+                                array_push($errors, $error);
+                            }
                         }
-                        if (count($categoryTab) == count($pathtab) && $termActualCategory->parent != $linkCategory->parent) {
-                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers une catégorie latérale dont le parent n\'est pas le même ');
-                            array_push($errors, $error);
-                        }
-                        if (count($categoryTab) < count($pathtab) && $category['term_id'] != $linkCategory->parent) {
-                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers une autre catégorie qui n\'est pas son enfant direct ');
-                            array_push($errors, $error);
-                        }
-                        if (count($categoryTab) > count($pathtab) && $termActualCategory->parent != $linkCategory->term_id) {
-                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien qui n\'est pas son parent direct');
-                            array_push($errors, $error);
-                        }
-                        if (count($categoryTab) == count($pathtab) && $linkCategory->term_id == $category['term_id']) {
-                            $error = itap_seoDisplayData($category, 'Lien dans le meta-field "<i>Texte dessous catégorie de produits</i>" pointant vers la catégorie actuelle');
-                            array_push($errors, $error);
+                        // check if link is on a category
+                        if ($if_category) {
+                            if (count($categoryTab) == count($pathtab) && $termActualCategory->parent != $if_category->parent) {
+                                $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers une catégorie latérale dont le parent n\'est pas le même ');
+                                array_push($errors, $error);
+                            }
+                            if (count($categoryTab) < count($pathtab) && !in_array($termActualCategory->slug, $pathtab)) {
+                                $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers une autre catégorie qui n\'est pas son enfant');
+                                array_push($errors, $error);
+                            }
+                            if (count($categoryTab) > count($pathtab) && $termActualCategory->parent != $if_category->term_id) {
+                                $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien qui n\'est pas son parent direct');
+                                array_push($errors, $error);
+                            }
                         }
                     }
                 }
@@ -151,10 +154,12 @@ function itap_get_errors_below_category_content() {
 }
 
 if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') :
+    $total_problems = count(itap_get_errors_no_categories_description()) + count(itap_get_errors_no_tags_description()) + count(itap_get_errors_below_category_content());
+    set_transient('count_seo_errors', $total_problems, MONTH_IN_SECONDS);
 ?>
     <div class="wrap is-there-a-problem-container">
         <p>Problèmes liés au référencement naturel</p>
-        <p class="problems_number">nombre de problèmes : <?php echo count(itap_get_errors_no_categories_description()) + count(itap_get_errors_no_tags_description()) + count(itap_get_errors_below_category_content()) ?></p>
+        <!-- <p class="problems_number">nombre de problèmes : </p> -->
 
         <table class="table-plugin">
             <thead>

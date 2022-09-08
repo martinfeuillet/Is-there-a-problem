@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.1.8
+  Version: 1.1.9
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -74,23 +74,13 @@ class itap_IsThereAProblem {
         $table_name = $wpdb->prefix . 'itap_archive';
         $sql = "SELECT count(*) FROM $table_name";
         $archives = $wpdb->get_var($sql);
-        if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
-            $results = $this->itap_getAllInfosFromProduct();
-            $errorsAlt = $this->itap_getErrorFromBaliseAlt($results);
-            $errorsVariable = $this->itap_getErrorFromVariableProducts($results);
-            $errorsImage = $this->itap_getErrorsFromImages($results);
-            $errorsRankMath = $this->itap_getErrorsFromRankMath($results);
-            $errorsLink = $this->itap_getErrorsFromLinks($results);
-            $errorsDescriptions = $this->itap_getErrorsFromDescriptions($results);
-            $countErrors = count($errorsAlt) + count($errorsVariable) + count($errorsImage) + count($errorsRankMath) + count($errorsLink) + count($errorsDescriptions) - $archives;
-        }
-        $notification_count = $countErrors ?? null;
-        add_menu_page('Problems', $notification_count ? sprintf("Problems <span class='awaiting-mod'>%d</span>", $notification_count) : 'Problems', 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
-        add_submenu_page('is_there_a_problem', 'Integration', 'Integration', 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
-        add_submenu_page('is_there_a_problem', 'SEO ', 'SEO', 'publish_pages', 'is_there_a_problem_seo', function () {
+        $total_errors = get_transient('total_integration_errors') + get_transient('count_seo_errors');
+        add_menu_page('Problems', sprintf("Problems <span class='awaiting-mod'>%d</span>", $total_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
+        add_submenu_page('is_there_a_problem', 'Integration', sprintf("Integration <span class='awaiting-mod'>%d</span>", get_transient('total_integration_errors')), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
+        add_submenu_page('is_there_a_problem', 'SEO', sprintf("SEO <span class='awaiting-mod'>%d</span>", get_transient('count_seo_errors')), 'publish_pages', 'is_there_a_problem_seo', function () {
             include "includes/seo-part.php";
         });
-        add_submenu_page('is_there_a_problem', 'Archive ', 'Archive', 'publish_pages', 'is_there_a_problem_archive', function () {
+        add_submenu_page('is_there_a_problem', 'Archives ', 'Archives', 'publish_pages', 'is_there_a_problem_archive', function () {
             include "includes/archive-part.php";
         });
     }
@@ -374,7 +364,6 @@ class itap_IsThereAProblem {
                     </thead>
                     <tbody class="tbody-plugin">
                         <?php
-
                         // filter data by integrator
                         if (!empty($_GET['author_name'])) {
                             $results = $this->itap_getAllInfosFromProduct();
@@ -392,9 +381,11 @@ class itap_IsThereAProblem {
                         if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
                         if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
 
-                        if (count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) == 0) {
+                        $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results));
+                        if (!$total_integration_errors) {
                             echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
                         }
+                        set_transient('total_integration_errors', $total_integration_errors, MONTH_IN_SECONDS);
                         ?>
 
                     </tbody>
