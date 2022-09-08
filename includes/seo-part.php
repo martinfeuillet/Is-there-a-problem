@@ -93,11 +93,11 @@ function itap_get_errors_below_category_content() {
             $categoryTab = array_filter(explode('/', $categoryPath)); // actual category
             $content = $category['meta']['below_category_content'][0];
             preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $content, $matches);
-            if (empty($content)) {
-                $error = itap_seoDisplayData($category, 'Catégorie qui n\'as de contenu dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
+            if (empty($content) && count($matches[1]) == 0) {
+                $error = itap_seoDisplayData($category, 'Catégorie qui n\'as de contenu et de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                 array_push($errors, $error);
             }
-            if (!empty($content) && count($matches[0]) == 0) {
+            if (!empty($content) && count($matches[1]) == 0) {
                 $error = itap_seoDisplayData($category, 'Catégorie qui ne contient pas de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                 array_push($errors, $error);
             }
@@ -148,6 +148,10 @@ function itap_get_errors_below_category_content() {
                                 $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien qui n\'est pas son parent direct');
                                 array_push($errors, $error);
                             }
+                        }
+                        if (!$if_product && !$if_category) {
+                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien qui n\'est pas un produit ou une catégorie existante');
+                            array_push($errors, $error);
                         }
                     }
                 }
