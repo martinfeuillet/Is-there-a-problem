@@ -53,10 +53,7 @@ function itap_get_errors_no_tags_description() {
         'taxonomy' => 'product_tag',
         'hide_empty' => false,
     ));
-    echo '<pre>';
-    print_r($attributes);
-    echo '</pre>';
-    die();
+
     foreach ($tags as $tag) {
         if (empty($tag->description) && $tag->name != 'Uncategorized') {
             $error = itap_seoDisplayData(json_decode(json_encode($tag), true), 'Pas de description pour cette étiquette', 'product_tag');
