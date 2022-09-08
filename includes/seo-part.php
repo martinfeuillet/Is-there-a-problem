@@ -129,6 +129,10 @@ function itap_get_errors_below_category_content() {
                                 $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers un produit qui n\'est pas dans la même catégorie ou dans une catégorie enfante de la catégorie actuelle ');
                                 array_push($errors, $error);
                             }
+                            if (count($categoryTab) == count($pathtab)) {
+                                $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien vers un produit qui n\'est pas dans la catégorie actuelle ');
+                                array_push($errors, $error);
+                            }
                         }
                         // check if link is on a category
                         if ($if_category) {
