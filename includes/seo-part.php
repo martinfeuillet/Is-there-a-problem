@@ -149,10 +149,6 @@ function itap_get_errors_below_category_content() {
                                 array_push($errors, $error);
                             }
                         }
-                        if (!$if_product && !$if_category) {
-                            $error = itap_seoDisplayData($category, 'description sous catégorie produit qui contient un lien qui n\'est pas un produit ou une catégorie existante');
-                            array_push($errors, $error);
-                        }
                     }
                 }
             }
