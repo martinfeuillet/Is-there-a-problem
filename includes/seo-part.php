@@ -53,15 +53,15 @@ function itap_get_errors_no_tags_description() {
         'taxonomy' => 'product_tag',
         'hide_empty' => false,
     ));
+    echo '<pre>';
+    print_r($attributes);
+    echo '</pre>';
+    die();
     foreach ($tags as $tag) {
         if (empty($tag->description) && $tag->name != 'Uncategorized') {
             $error = itap_seoDisplayData(json_decode(json_encode($tag), true), 'Pas de description pour cette étiquette', 'product_tag');
             array_push($errors, $error);
         }
-    }
-    if (!in_array('couleur', $attributes) && !in_array('pa_couleur', $attributes)) {
-        $error = itap_seoDisplayData(['term_id' => 'global', 'name' => 'global', 'error' => 'global'], 'pas d\'attribut couleur sur le site');
-        array_push($errors, $error);
     }
     return $errors;
 }
