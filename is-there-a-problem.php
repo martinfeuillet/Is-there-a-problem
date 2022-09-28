@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.1.14
+  Version: 1.2.0
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: MartinDev
@@ -12,7 +12,7 @@
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-define('ITAP_VERSION', '1.1.14');
+define('ITAP_VERSION', '1.2.0');
 
 function activate_itap() {
     require_once plugin_dir_path(__FILE__) . 'includes/class-itap-activator.php';

@@ -13,6 +13,18 @@
         </thead>
         <tbody class="tbody-plugin">
             <?php
+            $errorsFromMetaTitle = $this->itap_get_errors_from_meta_title();
+            if (count($errorsFromMetaTitle) > 0) {
+                foreach ($errorsFromMetaTitle as $error) {
+                    $this->itap_seoDisplayTab($error);
+                }
+            }
+            $get_nofollow_link = $this->itap_get_errors_nofollow_link();
+            if (count($get_nofollow_link) > 0) {
+                foreach ($get_nofollow_link as $category) {
+                    $this->itap_seoDisplayTabLinks($category);
+                }
+            }
             $noDescription = $this->itap_get_errors_no_categories_description();
             if (count($noDescription) > 0) {
                 foreach ($noDescription as $category) {
@@ -31,6 +43,7 @@
                     $this->itap_seoDisplayTab($category);
                 }
             }
+
             ?>
         </tbody>
     </table>

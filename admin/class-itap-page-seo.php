@@ -16,21 +16,41 @@ class Itap_Page_Seo {
             )
         );
 ?>
-        <tr>
+        <tr style="background-color:<?php echo esc_html($category['color']) ?>; <?php echo esc_html($category['color']) == 'red' ? 'color : white' : '' ?>">
             <td><?php echo esc_html($category['term_id']) ?></td>
             <td><?php echo esc_html($category['name']) ?></td>
             <td><a target="_blank" href="<?php echo esc_url(site_url() . '/wp-admin/term.php?taxonomy=' . $category['taxonomie'] . '&tag_ID=' . $category['term_id'] . '&post_type=product') ?>">click</a></td>
             <td><?php echo wp_kses(($category['error']), $allowed_html) ?></td>
         </tr>
+    <?php
+    }
+
+    function itap_seoDisplayTabLinks($category) {
+        $allowed_html = array(
+            'div' => array(
+                'class' => array()
+            ),
+            'span' => array(
+                'class' => array()
+            )
+        );
+    ?>
+        <tr style="background-color: <?php echo esc_html($category['color']) ?>;">
+            <td><?php echo esc_html($category['term_id']) ?></td>
+            <td><?php echo esc_html($category['name']) ?></td>
+            <td><a target="_blank" href="<?php echo esc_url(site_url() . '/wp-admin/nav-menus.php?action=edit&menu=' . $category['term_id'] . '') ?>">click</a></td>
+            <td><?php echo wp_kses(($category['error']), $allowed_html) ?></td>
+        </tr>
 <?php
     }
 
-    function itap_seoDisplayData($result, string $problem, string $taxonomy = 'product_cat') {
+    function itap_seoDisplayData($result, string $problem, string $taxonomy = 'product_cat', $color = 'white') {
         return array(
             'term_id' => $result['term_id'],
             'name' => $result['name'],
             'error' => $problem,
-            'taxonomie' => $taxonomy
+            'taxonomie' => $taxonomy,
+            'color' => $color
         );
     }
 
@@ -44,6 +64,26 @@ class Itap_Page_Seo {
         foreach ($categories as $category) {
             if (empty($category->description) && $category->name != 'Uncategorized') {
                 $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Pas de description pour cette catégorie');
+                array_push($errors, $error);
+            }
+        }
+        return $errors;
+    }
+
+    function itap_get_errors_from_meta_title() {
+        $errors = array();
+        $args = array(
+            'taxonomy' => 'product_cat',
+            'hide_empty' => false,
+        );
+        $categories = get_terms($args);
+
+        foreach ($categories as $category) {
+            $link = get_category_link($category->term_id);
+            $meta_title = get_meta_tags($link)['twitter:title'];
+
+            if (preg_match('/archive/i', $meta_title)) {
+                $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', '', 'red');
                 array_push($errors, $error);
             }
         }
@@ -73,7 +113,6 @@ class Itap_Page_Seo {
             'taxonomy' => 'product_cat',
             'hide_empty' => false,
             'fields' => 'ids',
-
         );
         $categories = get_terms($args);
         $belowContent = array();
@@ -159,9 +198,59 @@ class Itap_Page_Seo {
         return $errors;
     }
 
+    /**
+     * search for nofollow attributes on particular menu links
+     *
+     * @return array
+     */
+    function itap_get_errors_nofollow_link() {
+        // search all link in the front page and check if they have a nofollow attribute
+        $errors = array();
+        $specials_links_slugs = array('conditions-generales-de-vente', 'mentions-legales', 'politique-de-confidentialite', 'politique-de-livraison', 'avis-clients', 'mon-compte');
+        $menu = wp_get_nav_menus(); // term_id, name, slug of the menu
+        foreach ($menu as $key) {
+            $menus_id[] = $key->term_id;
+        }
+
+
+        $categories = get_terms('product_cat', array('hide_empty' => false)); // term_id, name, description, parent of the category
+
+
+        // get all slugs of links in menus
+        $slugs = array();
+        foreach ($menus_id as $id) {
+            $menu = wp_get_nav_menu_items($id);
+            foreach ($menu as $item) {
+                $slug = end(explode('/', $item->url));
+                $slugs[] = $slug;
+                if ($item->xfn !== 'nofollow') {
+                    $category = array('term_id' => $id, 'name' => $item->title);
+                    if (in_array($slug, $specials_links_slugs)) {
+                        $error = $this->itap_seoDisplayData($category, $slug . ' doit avoir un attribut nofollow. quand vous êtes sur la page menu, allez sur options d\'ecran en haut à droite, cocher xfn, puis inscrivez "nofollow" sur le champ xfn du lien du menu ' . $slug . '');
+                        array_push($errors, $error);
+                    }
+                }
+            }
+        }
+        $slugs = array_unique($slugs);
+
+        // filter categories array and keep only categories that aren't slugs array
+        $categories = array_filter($categories, function ($category) use ($slugs) {
+            return !in_array($category->slug, $slugs);
+        });
+
+        foreach ($categories as $category) {
+            $data = array('term_id' => $menus_id[0], 'name' => $category->name);
+            $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
+            array_push($errors, $error);
+        }
+
+        return $errors;
+    }
+
     function itap_partials_seo() {
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') {
-            $total_problems = count($this->itap_get_errors_no_categories_description()) + count($this->itap_get_errors_no_tags_description()) + count($this->itap_get_errors_below_category_content());
+            $total_problems = count($this->itap_get_errors_no_categories_description()) + count($this->itap_get_errors_no_tags_description()) + count($this->itap_get_errors_below_category_content()) + count($this->itap_get_errors_nofollow_link());
             set_transient('count_seo_errors', $total_problems, MONTH_IN_SECONDS);
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/itap-seo-display.php';
         }

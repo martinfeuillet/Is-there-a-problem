@@ -185,12 +185,13 @@ class Itap_Admin {
 
             // check if the product has variations
             if ($product->is_type('variable')) {
-                if (!$product->default_attributes) {
+                if (!$product->get_default_attributes()) {
                     $error = $this->itap_displayData($result, "Produit variable qui n'a pas de produit par défaut", '1003');
                     array_push($errors, $error);
                 }
                 $attribute_variation = [];
-                foreach ($product->attributes as $attribute) {
+
+                foreach ($product->get_attributes() as $attribute) {
                     if ($attribute['variation']) {
                         array_push($attribute_variation, $attribute);
                     }
@@ -205,11 +206,11 @@ class Itap_Admin {
                         }
                     }
                 }
-                if (count($attribute_variation) != count($product->default_attributes)) {
+                if (count($attribute_variation) != count($product->get_default_attributes())) {
                     $error = $this->itap_displayData($result, 'Produit variable ou il manque une ou plusieurs variations dans le produit par défaut', '1005');
                     array_push($errors, $error);
                 }
-                if (array_diff($product->default_attributes, $terms)) {
+                if (array_diff($product->get_default_attributes(), $terms)) {
                     $error = $this->itap_displayData($result, 'Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class="tooltip">catégories<span class="tooltiptext">Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l\'onglet attribut de produit</span></div>. ', '1006');
                     array_push($errors, $error);
                 }
@@ -282,9 +283,8 @@ class Itap_Admin {
             $main_description = $product->get_description();
             $short_description = $product->get_short_description();
             $all_description = array($description1, $description2, $main_description, $short_description);
-            $link_description = array_filter($all_description, function ($value) {
-                preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $value, $matches);
-                return count($matches[1]) > 0;
+            $link_description = array_filter($all_description, function ($value) { // and it's not a mailto link
+                return preg_match('/<a href="https?:\/\/[^"]+">/', $value) && !preg_match('/<a href="mailto:/', $value);
             });
 
             if (count($link_description) > 0) {
