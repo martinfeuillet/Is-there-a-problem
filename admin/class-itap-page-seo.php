@@ -82,7 +82,7 @@ class Itap_Page_Seo {
             $link = get_category_link($category->term_id);
             $meta_title = get_meta_tags($link)['twitter:title'];
 
-            if (preg_match('/archive/i', $meta_title)) {
+            if (preg_match('/archive/i', $meta_title) && $category->name != 'Uncategorized') {
                 $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', '', 'red');
                 array_push($errors, $error);
             }
@@ -212,9 +212,7 @@ class Itap_Page_Seo {
             $menus_id[] = $key->term_id;
         }
 
-
         $categories = get_terms('product_cat', array('hide_empty' => false)); // term_id, name, description, parent of the category
-
 
         // get all slugs of links in menus
         $slugs = array();
@@ -223,7 +221,7 @@ class Itap_Page_Seo {
             foreach ($menu as $item) {
                 $slug = end(explode('/', $item->url));
                 $slugs[] = $slug;
-                if ($item->xfn !== 'nofollow') {
+                if ($item->xfn !== 'nofollow' && $slug != 'Uncategorized') {
                     $category = array('term_id' => $id, 'name' => $item->title);
                     if (in_array($slug, $specials_links_slugs)) {
                         $error = $this->itap_seoDisplayData($category, $slug . ' doit avoir un attribut nofollow. quand vous êtes sur la page menu, allez sur options d\'ecran en haut à droite, cocher xfn, puis inscrivez "nofollow" sur le champ xfn du lien du menu ' . $slug . '');
@@ -240,9 +238,11 @@ class Itap_Page_Seo {
         });
 
         foreach ($categories as $category) {
-            $data = array('term_id' => $menus_id[0], 'name' => $category->name);
-            $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
-            array_push($errors, $error);
+            if ($category->name != 'Uncategorized') {
+                $data = array('term_id' => $menus_id[0], 'name' => $category->name);
+                $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
+                array_push($errors, $error);
+            }
         }
 
         return $errors;
