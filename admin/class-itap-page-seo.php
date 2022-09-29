@@ -219,7 +219,8 @@ class Itap_Page_Seo {
         foreach ($menus_id as $id) {
             $menu = wp_get_nav_menu_items($id);
             foreach ($menu as $item) {
-                $slug = end(explode('/', $item->url));
+                $slug = explode('/', $item->url);
+                $slug = end($slug);
                 $slugs[] = $slug;
                 if ($item->xfn !== 'nofollow' && $slug != 'Uncategorized') {
                     $category = array('term_id' => $id, 'name' => $item->title);
@@ -246,6 +247,15 @@ class Itap_Page_Seo {
         }
 
         return $errors;
+    }
+
+    function get_errors_from_seo($fn_errors, $fn_display) {
+        $errors = $fn_errors();
+        if (count($errors) > 0) {
+            foreach ($errors as $error) {
+                $fn_display($error);
+            }
+        }
     }
 
     function itap_partials_seo() {

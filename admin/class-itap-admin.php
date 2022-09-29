@@ -280,15 +280,27 @@ class Itap_Admin {
             }
             $description1 = $product->get_meta("description-1") ?? null;
             $description2 = $product->get_meta("description-2") ?? null;
+            $description3 = $product->get_meta("description-3") ?? null;
             $main_description = $product->get_description();
             $short_description = $product->get_short_description();
-            $all_description = array($description1, $description2, $main_description, $short_description);
-            $link_description = array_filter($all_description, function ($value) { // and it's not a mailto link
-                return preg_match('/<a href="https?:\/\/[^"]+">/', $value) && !preg_match('/<a href="mailto:/', $value);
+            // show html tags of the description
+
+            $all_description = array($description1, $description2, $description3, $main_description, $short_description);
+            $link_description = array_filter($all_description, function ($value) { // if it's a link and it's not a mailto link
+                return preg_match('/href/', $value) && !preg_match('/<a href="mailto/', $value);
             });
 
+
             if (count($link_description) > 0) {
-                $error = $this->itap_displayData($result, 'Description-1 ou description-2 ou description principale ou description courte du produit qui contient un lien', '1012');
+                $error = $this->itap_displayData($result, 'Description-1, description-2 ou description-3 ou description principale ou description courte du produit qui contient un lien', '1012');
+                array_push($errors, $error);
+            }
+            // search if there are <div> or </div> in all the description
+            $div_description = array_filter($all_description, function ($value) {
+                return preg_match('/<div>/', $value) || preg_match('/<\/div>/', $value);
+            });
+            if (count($div_description) > 0) {
+                $error = $this->itap_displayData($result, 'Description-1, description-2,description-3,description principale ou description courte du produit qui contient une balise div, effacez la', '1014');
                 array_push($errors, $error);
             }
         }
@@ -302,9 +314,10 @@ class Itap_Admin {
             $product = wc_get_product($result['id']);
             $description1 = $product->get_meta("description-1") ?? null;
             $description2 = $product->get_meta("description-2") ?? null;
+            $description3 = $product->get_meta("description-3") ?? null;
             $short_description = $product->get_short_description();
-            if (str_word_count($description1) + str_word_count($description2) + str_word_count($short_description) < 200) {
-                $error = $this->itap_displayData($result, 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
+            if (str_word_count($description1) + str_word_count($description2) + str_word_count($description3) +  str_word_count($short_description)  < 200) {
+                $error = $this->itap_displayData($result, 'Description-1 + description-2, descritption-3 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
                 array_push($errors, $error);
             }
         }
@@ -332,6 +345,10 @@ class Itap_Admin {
     }
 
     function itap_page() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'itap_archive';
+        // count the number of lines in the itap_archive table
+        $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
         $admins = get_users(array('role__in' => array('administrator', 'shop_manager')));
         if (!empty($_GET['author_name'])) {
             $results = $this->itap_getAllInfosFromProduct();
@@ -341,7 +358,7 @@ class Itap_Admin {
         } else {
             $results = $this->itap_getAllInfosFromProduct();
         }
-        $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results));
+        $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) - $count;
         set_transient('total_integration_errors', $total_integration_errors, MONTH_IN_SECONDS);
 
 

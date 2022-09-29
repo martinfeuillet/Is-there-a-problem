@@ -16,4 +16,5 @@ $codeErrorFile = array(
     '1011' => "le slug d'un produit ne peut pas être le même qu'une de ses catégories",
     '1012' => "Description-1 ou description-2 ou description principale ou description courte du produit qui contient un lien",
     '1013' => "Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu",
+    '1014' => "Description-1, description-2,description-3,description principale ou description courte du produit qui contient une balise <div>, effacez la",
 );

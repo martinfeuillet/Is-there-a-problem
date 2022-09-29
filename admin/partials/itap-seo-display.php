@@ -13,37 +13,11 @@
         </thead>
         <tbody class="tbody-plugin">
             <?php
-            $errorsFromMetaTitle = $this->itap_get_errors_from_meta_title();
-            if (count($errorsFromMetaTitle) > 0) {
-                foreach ($errorsFromMetaTitle as $error) {
-                    $this->itap_seoDisplayTab($error);
-                }
-            }
-            $get_nofollow_link = $this->itap_get_errors_nofollow_link();
-            if (count($get_nofollow_link) > 0) {
-                foreach ($get_nofollow_link as $category) {
-                    $this->itap_seoDisplayTabLinks($category);
-                }
-            }
-            $noDescription = $this->itap_get_errors_no_categories_description();
-            if (count($noDescription) > 0) {
-                foreach ($noDescription as $category) {
-                    $this->itap_seoDisplayTab($category);
-                }
-            }
-            $noBelowContent = $this->itap_get_errors_below_category_content();
-            if (count($noBelowContent) > 0) {
-                foreach ($noBelowContent as $category) {
-                    $this->itap_seoDisplayTab($category);
-                }
-            }
-            $noAttributesDescription = $this->itap_get_errors_no_tags_description();
-            if (count($noAttributesDescription) > 0) {
-                foreach ($noAttributesDescription as $category) {
-                    $this->itap_seoDisplayTab($category);
-                }
-            }
-
+            $this->get_errors_from_seo(array($this, 'itap_get_errors_from_meta_title'), array($this, 'itap_seoDisplayTab'));
+            $this->get_errors_from_seo(array($this, 'itap_get_errors_nofollow_link'), array($this, 'itap_seoDisplayTabLinks'));
+            $this->get_errors_from_seo(array($this, 'itap_get_errors_no_categories_description'), array($this, 'itap_seoDisplayTab'));
+            $this->get_errors_from_seo(array($this, 'itap_get_errors_below_category_content'), array($this, 'itap_seoDisplayTab'));
+            $this->get_errors_from_seo(array($this, 'itap_get_errors_no_tags_description'), array($this, 'itap_seoDisplayTab'));
             ?>
         </tbody>
     </table>
