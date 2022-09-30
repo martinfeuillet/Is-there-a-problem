@@ -29,12 +29,20 @@
         <tbody class="tbody-plugin">
             <?php foreach ($this->display_all_cate_product() as $key) : ?>
                 <tr>
-                    <td><?php echo $key['id'] ?></td>
+                    <td><?php echo $key['cat_id'] ?></td>
                     <td><?php echo '<a href="' . $key['link'] . '">' . $key['name'] . '</a>' ?></td>
-                    <td>10</td>
-                    <td>10</td>
-                    <td>10</td>
-                    <td><button value="<?php echo $key['name'] ?>" class="seo-quantum-request">Requete</button></td>
+                    <td><?php echo $key['score'] ?? '...' ?></td>
+                    <td><?php echo $key['competitor_score'] ?? '...' ?></td>
+                    <td><?php echo $key['improvement_score'] ?? '...' ?></td>
+                    <td>
+                        <?php
+                        // if analysis_id  exist and created_at is less than 6 month
+                        if ($key['analysis_id'] && strtotime($key['created_at']) > strtotime('-6 month')) : ?>
+                            <button class="btn btn-success seo-quantum-analysis" data-cat_id="<?php echo $key['cat_id'] ?>" data-url="<?php echo get_term_link($key['cat_id'], 'product_cat') ?>" data-analysis_id="<?php echo $key['analysis_id'] ?>">Analyse texte</button>
+                        <?php else : ?>
+                            <button value="<?php echo $key['name'] ?>" class="seo-quantum-request">requête Id </button>
+                        <?php endif ?>
+                    </td>
                 </tr>
             <?php endforeach ?>
         </tbody>

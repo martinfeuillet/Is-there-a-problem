@@ -25,6 +25,7 @@ class ItapAdmin {
         add_action("wp_ajax_delete_checkbox_value", array($this, "itap_delete_archive"));
         add_action('wp_ajax_send_request_to_seo_quantum', array($ItapPageSeoQuantum, 'itap_send_request_to_seo_quantum'));
         add_action('wp_ajax_save_seo_quantum_api_key', array($ItapPageSeoQuantum, 'itap_save_seo_quantum_api_key'));
+        add_action('wp_ajax_analysis_text_seo_quantum', array($ItapPageSeoQuantum, 'itap_analysis_text_seo_quantum'));
     }
 
     public function enqueue_styles() {

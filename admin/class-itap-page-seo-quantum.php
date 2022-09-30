@@ -39,6 +39,7 @@ class ItapPageSeoQuantum {
         $result = curl_exec($ch);
         if (curl_errno($ch)) {
             echo 'Errorrr:' . curl_error($ch);
+            wp_die();
         }
         curl_close($ch);
         $this->insert_seo_quantum_data($result, $cat_id, $cat_name);
@@ -86,8 +87,47 @@ class ItapPageSeoQuantum {
         }
     }
 
+    function itap_analysis_text_seo_quantum() {
+        $cat_id = $_POST['data_cat_id'];
+        $analysis_id = $_POST['data_analysis_id'];
+        $url = $_POST["data_url"];
+        $api_key = get_option('itap_seo_quantum_api_key');
+
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, "http://api.seoquantum.com/api/task/analysis/$analysis_id/optimize");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"from_url\": \"" . $url . "\"}");
+
+        $headers = array();
+        $headers[] = 'Accept: application/json';
+        $headers[] = 'Api-Key: ' . $api_key;
+        $headers[] = 'Content-Type: application/json';
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+        $result = curl_exec($ch);
+        if (curl_errno($ch)) {
+            echo wp_json_encode(array('api' => 'Error:' . curl_error($ch)));
+            wp_die();
+        }
+        curl_close($ch);
+        // $result = json_decode($result, true);
+        // response
+
+        echo wp_json_encode(
+            array(
+                'result' => $result,
+            )
+        );
+        wp_die();
+    }
+
 
     function display_all_cate_product() {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'seo_quantum';
+
         $args = array(
             'taxonomy' => 'product_cat',
             'hide_empty' => false,
@@ -95,10 +135,17 @@ class ItapPageSeoQuantum {
         $categories = get_categories($args);
         $results = array();
         foreach ($categories as $category) {
+            $result = $wpdb->get_results("SELECT * FROM $table_name WHERE cat_id = $category->term_id", ARRAY_A);
+            if ($result) $result = $result[0];
             $temp = array();
-            $temp['id'] = $category->term_id;
+            $temp['cat_id'] = $category->term_id;
             $temp['name'] = $category->name;
             $temp['link'] = get_edit_term_link($category->term_id, 'product_cat');
+            $temp['analysis_id'] = $result['analysis_id'] ?? null;
+            $temp['score'] = $result['score'] ?? null;
+            $temp['competitor_score'] = $result['competitor_score'] ?? null;
+            $temp['improvement_score'] = $result['improvement_score'] ?? null;
+            $temp['created_at'] = $result['created_at'] ?? null;
             array_push($results, $temp);
         }
         return $results;
