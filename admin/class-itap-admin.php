@@ -1,8 +1,8 @@
 <?php
 
-use RankMath\Analytics\Rest;
+require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-itap-page-seo-quantum.php';
 
-class Itap_Admin {
+class ItapAdmin {
 
     private $plugin_name;
 
@@ -20,8 +20,11 @@ class Itap_Admin {
         add_action('admin_menu', array($this, 'itap_add_menu'));
 
         // ajax call
+        $ItapPageSeoQuantum = new ItapPageSeoQuantum();
         add_action("wp_ajax_get_checkbox_value", array($this, "itap_send_archive_to_db"));
         add_action("wp_ajax_delete_checkbox_value", array($this, "itap_delete_archive"));
+        add_action('wp_ajax_send_request_to_seo_quantum', array($ItapPageSeoQuantum, 'itap_send_request_to_seo_quantum'));
+        add_action('wp_ajax_save_seo_quantum_api_key', array($ItapPageSeoQuantum, 'itap_save_seo_quantum_api_key'));
     }
 
     public function enqueue_styles() {
@@ -32,6 +35,7 @@ class Itap_Admin {
         wp_enqueue_script('isthereaproblemJS', plugin_dir_url(dirname(__FILE__)) . 'admin/assets/js/itap.js', array('jquery'), $this->version, true);
         wp_localize_script('isthereaproblemJS', 'my_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
     }
+
 
     function itap_send_archive_to_db() {
         global $wpdb;
@@ -80,18 +84,24 @@ class Itap_Admin {
 
         add_menu_page('Problems', sprintf("Problems <span class='awaiting-mod'>%d</span>", $total_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
         add_submenu_page('is_there_a_problem', 'Integration', sprintf("Integration <span class='awaiting-mod'>%d</span>", $total_integration_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
-        add_submenu_page('is_there_a_problem', 'SEO', sprintf("SEO <span class='awaiting-mod'>%d</span>", $total_seo_errors), 'publish_pages', 'is_there_a_problem_seo', array($this, 'itap_page_seo'));
-        add_submenu_page('is_there_a_problem', 'Archives ', 'Archives', 'publish_pages', 'is_there_a_problem_archive', array($this, 'itap_page_archive'));
+        add_submenu_page('is_there_a_problem', 'SEO', sprintf("SEO <span class='awaiting-mod'>%d</span>", $total_seo_errors), 'publish_pages', 'is_there_a_problem_seo', array($this, 'ItapPageSeo'));
+        add_submenu_page('is_there_a_problem', 'Archives ', 'Archives', 'publish_pages', 'is_there_a_problem_archive', array($this, 'ItapPageArchive'));
+        add_submenu_page('is_there_a_problem', 'Seo-Quantum ', 'Seo-Quantum', 'publish_pages', 'Seo-Quantum', array($this, 'ItapPageSeoQuantum'));
     }
 
-    function itap_page_seo() {
+    function ItapPageSeo() {
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-itap-page-seo.php';
-        $itap_page_seo = new Itap_Page_Seo();
+        $ItapPageSeo = new ItapPageSeo();
     }
 
-    function itap_page_archive() {
+    function ItapPageArchive() {
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-itap-page-archive.php';
-        $itap_page_archive = new Itap_Page_Archive();
+        $ItapPageArchive = new ItapPageArchive();
+    }
+
+    function ItapPageSeoQuantum() {
+        $ItapPageSeoQuantum = new ItapPageSeoQuantum();
+        $ItapPageSeoQuantum->itap_seo_quantum_displayTab();
     }
 
     function itap_displayData($result, string $problem, string $codeError) {

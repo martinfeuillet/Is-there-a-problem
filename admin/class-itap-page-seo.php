@@ -1,6 +1,6 @@
 <?php
 
-class Itap_Page_Seo {
+class ItapPageSeo {
 
     function __construct() {
         $this->itap_partials_seo();
@@ -78,9 +78,9 @@ class Itap_Page_Seo {
         );
         $categories = get_terms($args);
 
+
         foreach ($categories as $category) {
-            $link = get_category_link($category->term_id);
-            $meta_title = get_meta_tags($link)['twitter:title'];
+            $meta_title = get_term_meta($category->term_id, 'rank_math_title', true);
 
             if (preg_match('/archive/i', $meta_title) && $category->name != 'Uncategorized') {
                 $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', '', 'red');

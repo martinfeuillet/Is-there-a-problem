@@ -23,7 +23,7 @@
 }
 
 .itap_button {
-    background-color: #515c8d;
+    background-color: #253371;
     padding: 1rem;
     cursor: pointer;
     outline: none;
@@ -136,4 +136,90 @@
 
 .problems_number {
     font-size: 1.5rem;
+}
+
+/* anim button */
+
+.quantum_form_submit label {
+    display: block;
+    font-size: 1.2rem;
+    margin: 1rem 0;
+}
+
+.quantum_form_submit input {
+    width: 80%;
+    padding: 0.5rem;
+}
+
+.quantum_form_submit button {
+    width: 150px;
+    height: 3rem;
+    border: none;
+    outline: none;
+    background: #253371;
+    color: #fff;
+    font-size: 22px;
+    border-radius: 40px;
+    text-align: center;
+    box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.4);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.check-box {
+    width: 80px;
+    height: 3rem;
+    border-radius: 40px;
+    box-shadow: 0 0 12px -2px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    padding-bottom: 2rem;
+    top: -20px;
+    right: -40px;
+    opacity: 0;
+}
+
+.check-box svg {
+    width: 40px;
+    margin: 20px;
+}
+
+svg path {
+    stroke-width: 3;
+    stroke: #fff;
+    stroke-dasharray: 34;
+    stroke-dashoffset: 34;
+    stroke-linecap: round;
+}
+
+.active {
+    background: #4d62c2;
+    transition: 1s;
+}
+
+.active .check-box {
+    right: 0;
+    opacity: 1;
+    transition: 1s;
+}
+
+.active p {
+    margin-right: 70px;
+    transition: 1s;
+}
+
+.active svg path {
+    stroke-dashoffset: 0;
+    transition: 1s;
+    transition-delay: 1s;
+}
+
+#reset_api_key {
+    background-color: #253371;
+    padding: 1rem;
+    cursor: pointer;
+    outline: none;
+    color: white;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
 }

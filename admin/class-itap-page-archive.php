@@ -4,7 +4,7 @@
 
 require_once plugin_dir_path(__FILE__) . 'inc/code-error.php';
 
-class Itap_Page_Archive {
+class ItapPageArchive {
     function __construct() {
         $this->itap_partial_archive();
     }

@@ -70,6 +70,8 @@ class Itap {
 		if (defined('ITAP_VERSION')) {
 			$this->version = ITAP_VERSION;
 		}
+
+		define('SEO_QUANTUM_API_KEY', 'QLVSH5czPIfwVQYFOI673ShdpX6pUH8P2GPUNFajiiQ');
 		$this->plugin_name = 'Is_There_A_Problem';
 
 		$this->load_dependencies();
@@ -83,7 +85,7 @@ class Itap {
 	 *
 	 * - Wc_Prod_Desc_Gen_Loader. Orchestrates the hooks of the plugin.
 	 * - Wc_Prod_Desc_Gen_I18n. Defines internationalization functionality.
-	 * - ITAP_Admin. Defines all hooks for the admin area.
+	 * - ItapAdmin. Defines all hooks for the admin area.
 	 * - Wc_Prod_Desc_Gen_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
@@ -123,7 +125,7 @@ class Itap {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new Itap_Admin($this->get_plugin_name(), $this->get_version());
+		$plugin_admin = new ItapAdmin($this->get_plugin_name(), $this->get_version());
 		// load scripts and styles only on the plugin settings page
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_styles');
 		$this->loader->add_action('admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts');

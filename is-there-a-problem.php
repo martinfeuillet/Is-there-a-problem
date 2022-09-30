@@ -2,17 +2,17 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.2.2
+  Version: 1.2.3
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
-  Author: MartinDev
+  Author: Ingenius Agency
   License: GPL v2 or later
 
 */
 
 if (!defined('ABSPATH')) exit; // Exit if accessed directly
 
-define('ITAP_VERSION', '1.2.2');
+define('ITAP_VERSION', '1.2.3');
 
 function activate_itap() {
     require_once plugin_dir_path(__FILE__) . 'includes/class-itap-activator.php';
