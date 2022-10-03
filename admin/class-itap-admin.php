@@ -158,6 +158,11 @@ class ItapAdmin {
 <?php
     }
 
+    /**
+     * get all the product and return it
+     *
+     * @return array
+     */
     function itap_getAllInfosFromProduct() {
         $args = array(
             'post_type' => 'product',
@@ -183,6 +188,13 @@ class ItapAdmin {
         return $pages_array;
     }
 
+    /**
+     * if a product hasen't alt text on the image, or alt text is too short, return error
+     *
+     * @param  array $results
+     * @return array
+     */
+
     function itap_getErrorFromBaliseAlt($results) {
         $errors = [];
         foreach ($results as $result) {
@@ -197,6 +209,12 @@ class ItapAdmin {
         return $errors;
     }
 
+    /**
+     * itap_getErrorFromVariableProducts
+     *
+     * @param  array $results
+     * @return array $errors
+     */
     function itap_getErrorFromVariableProducts($results) {
         $errors = [];
         $couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
@@ -213,7 +231,6 @@ class ItapAdmin {
                 }
             }
 
-            // check if the product has variations
             if ($product->is_type('variable')) {
                 if (!$product->get_default_attributes()) {
                     $error = $this->itap_displayData($result, "Produit variable qui n'a pas de produit par défaut", '1003');
@@ -253,8 +270,12 @@ class ItapAdmin {
         return $errors;
     }
 
+    /**
+     *  try ton know if wordpress create responsive images for the product
+     * @param  array $results
+     * @return array $errors
+     */
     function itap_getErrorsFromImages($results) {
-        // try ton know if wordpress create responsive images for the product
         $errors = [];
         foreach ($results as $result) {
             $image_id = get_post_thumbnail_id($result['id']);
@@ -281,6 +302,12 @@ class ItapAdmin {
         return $errors;
     }
 
+    /**
+     * get errors from rank math product description who hasn't been filled 
+     *
+     * @param  array $results
+     * @return array $errors
+     */
     function itap_getErrorsFromRankMath($results) {
         $errors = [];
         foreach ($results as $result) {
@@ -298,9 +325,7 @@ class ItapAdmin {
         $errors = [];
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
-            // get categories of the product
             $categories = wp_get_post_terms($result['id'], 'product_cat', array('fields' => 'slugs'));
-            // get the slug of the product
             $slug = $product->get_slug();
 
             // check if the slug of the product is in the list of categories
@@ -308,6 +333,7 @@ class ItapAdmin {
                 $error = $this->itap_displayData($result, 'le slug d\'un produit ne peut pas être le même qu\'une de ses catégories', '1011');
                 array_push($errors, $error);
             }
+
             $description1 = $product->get_meta("description-1") ?? null;
             $description2 = $product->get_meta("description-2") ?? null;
             $description3 = $product->get_meta("description-3") ?? null;
@@ -334,6 +360,7 @@ class ItapAdmin {
                 array_push($errors, $error);
             }
         }
+
         return $errors;
     }
 
@@ -342,13 +369,52 @@ class ItapAdmin {
         $errors = [];
         foreach ($result as $result) {
             $product = wc_get_product($result['id']);
-            $description1 = $product->get_meta("description-1") ?? null;
-            $description2 = $product->get_meta("description-2") ?? null;
-            $description3 = $product->get_meta("description-3") ?? null;
-            $short_description = $product->get_short_description();
-            if (str_word_count($description1) + str_word_count($description2) + str_word_count($description3) +  str_word_count($short_description)  < 200) {
-                $error = $this->itap_displayData($result, 'Description-1 + description-2, descritption-3 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
-                array_push($errors, $error);
+            $settings = get_option('itap_settings');
+            if ($settings) {
+                $possible_desc = array(
+                    $short_description = $settings['short_desc'] ? $product->get_short_description() : null,
+                    $description1 = $settings['desc1'] ? $product->get_meta("description-1") : null,
+                    $description2 = $settings['desc2'] ? $product->get_meta("description-2") : null,
+                    $description3 = $settings['desc3'] ? $product->get_meta("description-3") : null,
+                    $desc_seo = $settings['desc_seo'] ? get_post_field('description-seo', $product->get_meta("description-categorie")) : null,
+                    // get content of a post with the id of the post
+                );
+                $custom_field = $settings['custom_field'] ? array(
+                    $custom_field1 = $settings['custom_field_input_1'] ? $product->get_meta($settings['custom_field_input_1']) : null,
+                    $custom_field2 = $settings['custom_field_input_2'] ? $product->get_meta($settings['custom_field_input_2']) : null,
+                    $custom_field3 = $settings['custom_field_input_3'] ? $product->get_meta($settings['custom_field_input_3']) : null,
+                ) : array();
+
+                $possible_desc = array_merge($possible_desc, $custom_field);
+                $possible_desc = array_filter($possible_desc);
+
+                $total_words_min_page = $settings['total_words_min_page'] ?? 200;
+                $total_words_min_block = $settings['total_words_min_block'] ?? 60;
+                $total_count = 0;
+                $error_check = false;
+                foreach ($possible_desc as $field) {
+                    $total_words = str_word_count(strip_tags($field));
+                    if ($total_words < $total_words_min_block && $error_check == false) {
+                        $error = $this->itap_displayData($result, 'Chaque champ d\'une page produit dont le nom est coché dans les paramètres du plugin doit avoir plus de ' . $total_words_min_block . ' mots, rajoutez en plus', '1015');
+                        array_push($errors, $error);
+                        $error_check = true;
+                    }
+                    $total_count += $total_words;
+                }
+
+                if ($total_count < $total_words_min_page) {
+                    $error = $this->itap_displayData($result, 'La page du produit contient moins de ' . $total_words_min_page . ' mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres', '1016');
+                    array_push($errors, $error);
+                }
+            } else {
+                $description1 = $product->get_meta("description-1") ?? null;
+                $description2 = $product->get_meta("description-2") ?? null;
+                $description3 = $product->get_meta("description-3") ?? null;
+                $short_description = $product->get_short_description();
+                if (str_word_count($description1) + str_word_count($description2) +  str_word_count($short_description)  < 200) {
+                    $error = $this->itap_displayData($result, 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu', '1013');
+                    array_push($errors, $error);
+                }
             }
         }
         return $errors;

@@ -213,6 +213,7 @@ class ItapPageSeo {
         }
 
         $categories = get_terms('product_cat', array('hide_empty' => false)); // term_id, name, description, parent of the category
+        // rank math noindex
 
         // get all slugs of links in menus
         $slugs = array();
@@ -239,7 +240,11 @@ class ItapPageSeo {
         });
 
         foreach ($categories as $category) {
-            if ($category->name != 'Uncategorized') {
+            // if category don't have noindex
+            $noindex = get_term_meta($category->term_id, 'rank_math_robots', true);
+
+
+            if ($category->name != 'Uncategorized' && $noindex[0] != 'noindex') {
                 $data = array('term_id' => $menus_id[0], 'name' => $category->name);
                 $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
                 array_push($errors, $error);

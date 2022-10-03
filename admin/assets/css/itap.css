@@ -214,14 +214,21 @@ svg path {
     transition-delay: 1s;
 }
 
-#reset_api_key {
+#reset_api_key,
+#itap_submit {
     background-color: #253371;
     padding: 1rem;
     cursor: pointer;
     outline: none;
     color: white;
     border-radius: 0.5rem;
+    transition: 0.3s ease;
     margin: 1rem 0;
+}
+
+#reset_api_key:hover,
+#itap_submit:hover {
+    background-color: #4d62c2;
 }
 
 /* ITAP SETTINGS */

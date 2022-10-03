@@ -1,5 +1,8 @@
 <?php
 $couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
+$settings = get_option('itap_settings');
+$total_words_min_page = $settings['total_words_min_page'] ?? 200;
+$total_words_min_block = $settings['total_words_min_block'] ?? 60;
 
 
 $codeErrorFile = array(
@@ -17,4 +20,6 @@ $codeErrorFile = array(
     '1012' => "Description-1 ou description-2 ou description principale ou description courte du produit qui contient un lien",
     '1013' => "Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu",
     '1014' => "Description-1, description-2,description-3,description principale ou description courte du produit qui contient une balise <div>, effacez la",
+    '1015' => 'Chaque champ d\'une page produit dont le nom est coché dans les paramètres du plugin doit avoir plus de ' . $total_words_min_block . ' mots, rajoutez en plus',
+    '1016' => 'La page du produit contient moins de ' . $total_words_min_page . ' mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres',
 );
