@@ -1,12 +1,16 @@
 <?php
 
 require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-itap-page-seo-quantum.php';
+require_once plugin_dir_path(dirname(__FILE__)) . 'admin/class-itap-page-settings.php';
+
 
 class ItapAdmin {
 
     private $plugin_name;
 
     private $version;
+
+    protected $plugin_pages = array('is_there_a_problem', 'is_there_a_problem_seo', 'is_there_a_problem_archive', 'seo_quantum', 'itap_reglages');
 
     public $lines = 0;
 
@@ -21,20 +25,29 @@ class ItapAdmin {
 
         // ajax call
         $ItapPageSeoQuantum = new ItapPageSeoQuantum();
+        $ItapPageSettings = new ItapPageSettings();
+
         add_action("wp_ajax_get_checkbox_value", array($this, "itap_send_archive_to_db"));
         add_action("wp_ajax_delete_checkbox_value", array($this, "itap_delete_archive"));
         add_action('wp_ajax_send_request_to_seo_quantum', array($ItapPageSeoQuantum, 'itap_send_request_to_seo_quantum'));
         add_action('wp_ajax_save_seo_quantum_api_key', array($ItapPageSeoQuantum, 'itap_save_seo_quantum_api_key'));
         add_action('wp_ajax_analysis_text_seo_quantum', array($ItapPageSeoQuantum, 'itap_analysis_text_seo_quantum'));
+        add_action('wp_ajax_itap_save_settings', array($ItapPageSettings, 'itap_save_settings'));
     }
 
     public function enqueue_styles() {
-        wp_enqueue_style('isthereaproblem', plugin_dir_url(dirname(__FILE__)) . 'admin/assets/css/itap.css', array(), $this->version, 'all');
+        // enqueue styles only on our plugin page
+        if (isset($_GET['page']) && in_array($_GET['page'], $this->plugin_pages)) {
+            wp_enqueue_style($this->plugin_name, plugin_dir_url(dirname(__FILE__)) . 'admin/assets/css/itap.css', array(), $this->version, 'all');
+        }
     }
 
     public function enqueue_scripts() {
-        wp_enqueue_script('isthereaproblemJS', plugin_dir_url(dirname(__FILE__)) . 'admin/assets/js/itap.js', array('jquery'), $this->version, true);
-        wp_localize_script('isthereaproblemJS', 'my_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+        // enqueue scripts only on our plugin page
+        if (isset($_GET['page']) && in_array($_GET['page'], $this->plugin_pages)) {
+            wp_enqueue_script('isthereaproblemJS', plugin_dir_url(dirname(__FILE__)) . 'admin/assets/js/itap.js', array('jquery'), $this->version, true);
+            wp_localize_script('isthereaproblemJS', 'my_ajax_object', array('ajaxurl' => admin_url('admin-ajax.php')));
+        }
     }
 
 
@@ -87,7 +100,8 @@ class ItapAdmin {
         add_submenu_page('is_there_a_problem', 'Integration', sprintf("Integration <span class='awaiting-mod'>%d</span>", $total_integration_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
         add_submenu_page('is_there_a_problem', 'SEO', sprintf("SEO <span class='awaiting-mod'>%d</span>", $total_seo_errors), 'publish_pages', 'is_there_a_problem_seo', array($this, 'ItapPageSeo'));
         add_submenu_page('is_there_a_problem', 'Archives ', 'Archives', 'publish_pages', 'is_there_a_problem_archive', array($this, 'ItapPageArchive'));
-        add_submenu_page('is_there_a_problem', 'Seo-Quantum ', 'Seo-Quantum', 'publish_pages', 'Seo-Quantum', array($this, 'ItapPageSeoQuantum'));
+        add_submenu_page('is_there_a_problem', 'Seo-Quantum ', 'Seo-Quantum', 'publish_pages', 'seo_quantum', array($this, 'ItapPageSeoQuantum'));
+        add_submenu_page('is_there_a_problem', 'Reglages ', 'Reglages', 'publish_pages', 'itap_reglages', array($this, 'ItapPageSettings'));
     }
 
     function ItapPageSeo() {
@@ -103,6 +117,11 @@ class ItapAdmin {
     function ItapPageSeoQuantum() {
         $ItapPageSeoQuantum = new ItapPageSeoQuantum();
         $ItapPageSeoQuantum->itap_seo_quantum_displayTab();
+    }
+
+    function ItapPageSettings() {
+        $ItapPageSettings = new ItapPageSettings();
+        $ItapPageSettings->itap_settings_displayTab();
     }
 
     function itap_displayData($result, string $problem, string $codeError) {

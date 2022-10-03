@@ -223,3 +223,22 @@ svg path {
     border-radius: 0.5rem;
     margin: 1rem 0;
 }
+
+/* ITAP SETTINGS */
+
+.itap-settings label {
+    font-size: 1.1rem;
+}
+
+.itap-settings div {
+    margin: 1rem 0;
+}
+
+.itap-settings input[type="text"] {
+    padding: 0.5rem;
+    width: 250px;
+    border: 1px solid #253371;
+    border-radius: 0.5rem;
+    outline: none;
+    margin-bottom: 1rem;
+}
