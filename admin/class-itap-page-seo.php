@@ -266,7 +266,7 @@ class ItapPageSeo {
     function itap_partials_seo() {
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') {
             $total_problems = count($this->itap_get_errors_no_categories_description()) + count($this->itap_get_errors_no_tags_description()) + count($this->itap_get_errors_below_category_content()) + count($this->itap_get_errors_nofollow_link());
-            set_transient('count_seo_errors', $total_problems, MONTH_IN_SECONDS);
+            update_option('count_seo_errors', $total_problems);
             require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/itap-seo-display.php';
         }
     }

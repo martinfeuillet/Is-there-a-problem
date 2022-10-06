@@ -98,7 +98,7 @@ class ItapPageSeoQuantum {
         curl_setopt($ch, CURLOPT_URL, "http://api.seoquantum.com/api/task/analysis/$analysis_id/optimize");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POST, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"from_url\": \"" . $url . "\"}");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"from_url\": \"$url\"}");
 
         $headers = array();
         $headers[] = 'Accept: application/json';

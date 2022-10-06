@@ -8,23 +8,23 @@
         </div>
         <div>
             <input type="checkbox" name="desc1" id="desc1" checked>
-            <label for="desc1">Descritpion 1</label>
+            <label for="desc1">Description 1</label>
         </div>
         <div>
             <input type="checkbox" name="desc2" id="desc2" checked>
-            <label for="desc2">Descritpion 2</label>
+            <label for="desc2">Description 2</label>
         </div>
         <div>
             <input type="checkbox" name="desc3" id="desc3" <?php echo $itap_settings['desc3'] ? 'checked' : '' ?>>
-            <label for="desc3">Descritpion 3</label>
+            <label for="desc3">Description 3</label>
         </div>
         <div>
             <input type="checkbox" name="desc_seo" id="desc_seo" <?php echo $itap_settings['desc_seo'] ? 'checked' : '' ?>>
-            <label for="desc_seo">Descritpion SEO</label>
+            <label for="desc_seo">Description SEO</label>
         </div>
         <div>
             <input type="checkbox" name="custom_field" id="itap_custom_field" <?php echo $itap_settings['custom_field'] ? 'checked' : '' ?>>
-            <label for="custom_field">Champ personnalisé</label>
+            <label for="custom_field">Champs personnalisés</label>
             <input type="text" style="<?php echo $itap_settings['custom_field'] ? 'display: block;' : 'display: none;' ?> margin-top: 1rem;" class="custom_field_input" id="custom_field_input_1" name="custom_field_input_1" placeholder="custom-1" value="<?php echo $itap_settings['custom_field_input_1'] ?? null ?>">
 
             <input type="text" style="<?php echo $itap_settings['custom_field'] ? 'display: block;' : 'display: none;' ?>" class="custom_field_input" id="custom_field_input_2" name="custom_field_input_2" placeholder="custom-2" value="<?php echo $itap_settings['custom_field_input_2'] ?? null ?>">

@@ -92,9 +92,10 @@ class ItapAdmin {
         $sql = "SELECT count(*) FROM $table_name";
 
         $archives = $wpdb->get_var($sql);
-        $total_errors = get_transient('total_integration_errors') + get_transient('count_seo_errors');
-        $total_integration_errors = get_transient('total_integration_errors');
-        $total_seo_errors = get_transient('count_seo_errors');
+
+        $total_integration_errors = get_option('total_integration_errors');
+        $total_seo_errors = get_option('count_seo_errors');
+        $total_errors = $total_integration_errors + $total_seo_errors;
 
         add_menu_page('Problems', sprintf("Problems <span class='awaiting-mod'>%d</span>", $total_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);
         add_submenu_page('is_there_a_problem', 'Integration', sprintf("Integration <span class='awaiting-mod'>%d</span>", $total_integration_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'));
@@ -455,7 +456,7 @@ class ItapAdmin {
             $results = $this->itap_getAllInfosFromProduct();
         }
         $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) - $count;
-        set_transient('total_integration_errors', $total_integration_errors, MONTH_IN_SECONDS);
+        update_option('total_integration_errors', $total_integration_errors);
 
 
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem') {
