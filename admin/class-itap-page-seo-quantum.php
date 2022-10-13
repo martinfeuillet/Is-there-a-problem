@@ -42,6 +42,7 @@ class ItapPageSeoQuantum {
             wp_die();
         }
         curl_close($ch);
+        $result = json_decode($result);
         $this->insert_seo_quantum_data($result, $cat_id, $cat_name);
         wp_die();
     }
@@ -50,13 +51,12 @@ class ItapPageSeoQuantum {
         global $wpdb;
         $table_name = $wpdb->prefix . 'seo_quantum';
 
-
         $charset_collate = $wpdb->get_charset_collate();
         $sql = "CREATE TABLE IF NOT EXISTS $table_name (
             id mediumint(9) NOT NULL AUTO_INCREMENT,
             cat_id mediumint(9) NOT NULL,
             keyword varchar(255) NOT NULL,
-            analysis_id int(11) NOT NULL, 
+            analysis_id varchar(255) NOT NULL, 
             created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
             score varchar(255) NULL,
             competitor_score varchar(255) NULL,
@@ -66,7 +66,6 @@ class ItapPageSeoQuantum {
         require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
         dbDelta($sql);
         // insert data
-        $result = json_decode($result, true);
         // check if the data is already in the table
         $check = $wpdb->get_results("SELECT * FROM $table_name WHERE cat_id = $cat_id");
 
@@ -76,14 +75,26 @@ class ItapPageSeoQuantum {
             array(
                 'cat_id' => $cat_id,
                 'keyword' => $cat_name,
-                'analysis_id' => $result['analysis_id']
+                'analysis_id' => $result->analysis_id,
             )
         );
         // check if the data is inserted
         if ($try) {
-            echo 'Data inserted';
+            echo wp_json_encode(array(
+                'success' => 'yes',
+                'cat_id' => $cat_id,
+                'keyword' => $cat_name,
+                'analysis_id' => $result->analysis_id,
+                'result' => $result
+            ));
         } else {
-            echo 'Data not inserted';
+            // echo wpdb problem
+            echo wp_json_encode(array(
+                'error' => $wpdb->last_error,
+                'cat_id' => $cat_id,
+                'keyword' => $cat_name,
+                'analysis_id' => $result->analysis_id
+            ));
         }
     }
 
@@ -118,6 +129,9 @@ class ItapPageSeoQuantum {
         echo wp_json_encode(
             array(
                 'result' => $result,
+                'cat_id' => $cat_id,
+                'analysis_id' => $analysis_id,
+                'url' => $url
             )
         );
         wp_die();

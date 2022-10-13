@@ -79,8 +79,13 @@
                 action: "send_request_to_seo_quantum",
                 cat_name,
             },
+            beforeSend: () => {
+                buttonrequest.text("Requête en cours...");
+                buttonrequest.attr("disabled", true);
+            },
             success: (res) => {
                 console.log(res);
+                window.location.reload();
             },
             error: (er) => {
                 console.log(er);
