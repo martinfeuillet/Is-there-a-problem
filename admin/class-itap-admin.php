@@ -172,22 +172,28 @@ class ItapAdmin {
             'orderby' => 'id',
             'order' => 'ASC'
         );
-        $pages = get_posts($args);
-        $pages_array = array();
-        foreach ($pages as $page) {
-            $image_id = get_post_thumbnail_id($page->ID);
+        $products = wc_get_products($args);
+        // $products = get_posts($args);
+        $products_array = array();
+        foreach ($products as $product) {
+            $image_id = get_post_thumbnail_id($product->get_id());
+            $author_id = get_post_field('post_author', $product->get_id());
+
             $args = array(
-                'id' => $page->ID,
-                'title' => $page->post_title,
-                'url' => $page->guid,
-                'author_name' => get_the_author_meta('display_name', $page->post_author),
-                'imageUrl' => get_the_post_thumbnail_url($page->ID),
+                'id' => $product->get_id(),
+                'title' => $product->get_title(),
+                'url' => $product->get_permalink(),
+                'author_name' => get_the_author_meta('display_name', $author_id),
+                'imageUrl' => wp_get_attachment_url($image_id),
                 'alt' => get_post_meta($image_id, '_wp_attachment_image_alt', true)
             );
-            array_push($pages_array, $args);
+            array_push($products_array, $args);
         }
-        return $pages_array;
+
+        return $products_array;
     }
+
+
 
     /**
      * if a product hasen't alt text on the image, or alt text is too short, return error
