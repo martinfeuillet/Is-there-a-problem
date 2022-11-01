@@ -1,5 +1,7 @@
 <?php
 
+use RankMath\Paper\Blog;
+
 class ItapPageSeo {
 
     function __construct() {
@@ -254,9 +256,28 @@ class ItapPageSeo {
         return $errors;
     }
 
+    function itap_get_rank_math_opengraph_thumbnail() {
+        $errors = array();
+        $html = file_get_contents(site_url());
+        $dom = new DOMDocument();
+        @$dom->loadHTML($html);
+        $xpath = new DOMXPath($dom);
+        $metas = $xpath->query('//meta[@property="og:image"]');
+        $ogImage = array();
+        foreach ($metas as $meta) {
+            $ogImage[] = $meta->getAttribute('content');
+        }
+        if (!$ogImage[0]) {
+            $data = array('term_id' => 0, 'name' => bloginfo('name'));
+            $error = $this->itap_seoDisplayData($data, 'le site actuel ne contient pas d\'image opengraph dans rank math section "titre et meta"', '', 'red');
+            array_push($errors, $error);
+        }
+        return $errors;
+    }
+
     function get_errors_from_seo($fn_errors, $fn_display) {
         $errors = $fn_errors();
-        if (count($errors) > 0) {
+        if (is_array($errors) && count($errors) > 0) {
             foreach ($errors as $error) {
                 $fn_display($error);
             }

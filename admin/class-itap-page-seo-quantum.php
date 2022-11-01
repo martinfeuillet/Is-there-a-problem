@@ -168,6 +168,8 @@ class ItapPageSeoQuantum {
 
 
 
+
+
     function itap_seo_quantum_displayTab() {
 
         require_once plugin_dir_path(dirname(__FILE__)) . 'admin/partials/itap-seo-quantum-display.php';

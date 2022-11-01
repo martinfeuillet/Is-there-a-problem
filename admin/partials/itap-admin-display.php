@@ -1,3 +1,12 @@
+<?php
+// get Schema Markup info
+
+// echo '<pre>';
+// print_r($schema);
+// echo '</pre>';
+// die();
+?>
+
 <div class="wrap is-there-a-problem-container">
     <p>Problèmes d'intégration</p>
     <div class="form-tri">
@@ -37,6 +46,7 @@
             <?php
             // filter data by integrator
             $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
+            // if ($this->lines < 290) $this->itap_getErrors('itap_no_schema_product', $results, '#DC3444');
             if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
             if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
             if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromImages', $results);

@@ -22,4 +22,5 @@ $codeErrorFile = array(
     '1014' => "Description-1, description-2,description-3,description principale ou description courte du produit qui contient une balise <div>, effacez la",
     '1015' => 'Chaque champ d\'une page produit dont le nom est coché dans les paramètres du plugin doit avoir plus de ' . $total_words_min_block . ' mots, rajoutez en plus',
     '1016' => 'La page du produit contient moins de ' . $total_words_min_page . ' mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres',
+    '1017' => "produit qui ne contient pas de schema rank math"
 );

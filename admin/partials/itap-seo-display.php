@@ -13,6 +13,7 @@
         </thead>
         <tbody class="tbody-plugin">
             <?php
+            $this->get_errors_from_seo(array($this, 'itap_get_rank_math_opengraph_thumbnail'), array($this, 'itap_seoDisplayTab'));
             $this->get_errors_from_seo(array($this, 'itap_get_errors_from_meta_title'), array($this, 'itap_seoDisplayTab'));
             $this->get_errors_from_seo(array($this, 'itap_get_errors_nofollow_link'), array($this, 'itap_seoDisplayTabLinks'));
             $this->get_errors_from_seo(array($this, 'itap_get_errors_no_categories_description'), array($this, 'itap_seoDisplayTab'));

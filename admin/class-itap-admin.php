@@ -318,10 +318,22 @@ class ItapAdmin {
     function itap_getErrorsFromRankMath($results) {
         $errors = [];
         foreach ($results as $result) {
-
             $product = wc_get_product($result['id']);
             if ($product->get_meta('rank_math_description') == '') {
                 $error = $this->itap_displayData($result, 'Produit associé à Rank Math qui n\'a pas de meta description', '1010');
+                array_push($errors, $error);
+            }
+        }
+        return $errors;
+    }
+
+    function itap_no_schema_product($results) {
+        $errors = [];
+        foreach ($results as $result) {
+            $product = wc_get_product($result['id']);
+
+            if (!get_post_meta($product->get_id(), 'rank_math_schema_WooCommerceProduct', true)) {
+                $error = $this->itap_displayData($result, 'produit qui ne contient pas de schema rank math', '1017');
                 array_push($errors, $error);
             }
         }
@@ -383,7 +395,7 @@ class ItapAdmin {
                     $description1 = $settings['desc1'] ? $product->get_meta("description-1") : null,
                     $description2 = $settings['desc2'] ? $product->get_meta("description-2") : null,
                     $description3 = $settings['desc3'] ? $product->get_meta("description-3") : null,
-                    $desc_seo = $settings['desc_seo'] ? get_post_field('description-seo', $product->get_meta("description-categorie")) : null,
+                    $desc_seo     = $settings['desc_seo'] ? get_post_field('description-seo', $product->get_meta("description-categorie")) : null,
                     // get content of a post with the id of the post
                 );
                 $custom_field = $settings['custom_field'] ? array(
@@ -453,15 +465,13 @@ class ItapAdmin {
         // count the number of lines in the itap_archive table
         $count = $wpdb->get_var("SELECT COUNT(*) FROM $table_name");
         $admins = get_users(array('role__in' => array('administrator', 'shop_manager')));
+        $results = $this->itap_getAllInfosFromProduct();
         if (!empty($_GET['author_name'])) {
-            $results = $this->itap_getAllInfosFromProduct();
             $results = array_filter($results, function ($result) {
                 return $result['author_name'] == $_GET['author_name'];
             });
-        } else {
-            $results = $this->itap_getAllInfosFromProduct();
         }
-        $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) - $count;
+        $total_integration_errors = count($this->itap_getErrorsFromLinks($results)) + count($this->itap_getErrorFromBaliseAlt($results)) + count($this->itap_getErrorFromVariableProducts($results)) + count($this->itap_getErrorsFromImages($results)) + count($this->itap_getErrorsFromRankMath($results)) + count($this->itap_getErrorsFromDescriptions($results)) + count($this->itap_no_schema_product($results)) - $count;
         update_option('total_integration_errors', $total_integration_errors);
 
 
