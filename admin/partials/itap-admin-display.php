@@ -1,10 +1,11 @@
 <?php
 // get Schema Markup info
+$schema = get_post_meta(121, 'rank_math_schema_WooCommerceProduct');
 
-// echo '<pre>';
-// print_r($schema);
-// echo '</pre>';
-// die();
+echo '<pre>';
+print_r($schema);
+echo '</pre>';
+die();
 ?>
 
 <div class="wrap is-there-a-problem-container">
