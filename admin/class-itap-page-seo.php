@@ -222,12 +222,15 @@ class ItapPageSeo {
 
         // get all slugs of links in menus
         $slugs = array();
+        $menu_product_cat = array();
         foreach ($menus_id as $id) {
             $menu = wp_get_nav_menu_items($id);
             foreach ($menu as $item) {
                 $slug = explode('/', $item->url);
                 $slug = end($slug);
-                $slugs[] = $slug;
+                if ($item->object == 'product_cat') {
+                    $menu_product_cat[] = $item->object_id;
+                }
                 if ($item->xfn !== 'nofollow' && $slug != 'Uncategorized') {
                     $category = array('term_id' => $id, 'name' => $item->title);
                     if (in_array($slug, $specials_links_slugs)) {
@@ -237,20 +240,15 @@ class ItapPageSeo {
                 }
             }
         }
-        $slugs = array_unique($slugs);
 
-        // filter categories array and keep only categories that aren't slugs array
-        $categories = array_filter($categories, function ($category) use ($slugs) {
-            return !in_array($category->slug, $slugs);
-        });
+        // filter menu_product_cat to get only the product categories that are not in the menu
+        $product_tagid = array_diff(array_column($categories, 'term_id'), $menu_product_cat);
 
         foreach ($categories as $category) {
             // if category don't have noindex
             $noindex = get_term_meta($category->term_id, 'rank_math_robots', true);
-
-
-            if ($category->name != 'Uncategorized' && $noindex[0] != 'noindex') {
-                $data = array('term_id' => $menus_id[0], 'name' => $category->name);
+            if ($category->name != 'Uncategorized' && $noindex[0] != 'noindex' && in_array($category->term_id, $product_tagid)) {
+                $data = array('term_id' => $category->term_id, 'name' => $category->name);
                 $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
                 array_push($errors, $error);
             }
