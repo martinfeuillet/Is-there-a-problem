@@ -138,7 +138,7 @@ class ItapPageSeo {
         //check the meta value of below content
         foreach ($belowContents as $belowContent) {
             if ($belowContent['name'] != 'Uncategorized') {
-                $content = $belowContent['below_category_content'] ?? $belowContent['description-bas'];
+                $content = $belowContent['below_category_content'] ? $belowContent['below_category_content'] :  $belowContent['description-bas'];
                 preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $content, $matches);
                 if (empty($content) && count($matches[1]) == 0) {
                     $error = $this->itap_seoDisplayData($belowContent, 'Catégorie qui n\'as de contenu et de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
