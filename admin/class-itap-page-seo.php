@@ -160,7 +160,9 @@ class ItapPageSeo {
                         $pathtab = array_filter(explode('/', $path));
                         $product_or_cat = end($pathtab);
 
-                        $if_product = new WC_Product(get_page_by_path($product_or_cat, OBJECT, 'product'));
+                        //    know post type of the slug
+                        $if_product = get_page_by_path($product_or_cat, OBJECT, 'product');
+                        $if_product = $if_product ? wc_get_product($if_product->ID) : false;
                         $if_category = get_term_by('slug', $product_or_cat, 'product_cat');
 
                         $parent_actual_category = $this->push_id_parent_category(array(), $belowContent['term_id']); //array of parent of the actual category
@@ -194,7 +196,7 @@ class ItapPageSeo {
                             }
 
                             // check if link is on a category
-                            if ($if_category && $if_product->get_id() == 0) {
+                            if ($if_category && ($if_product->get_id() == 0 || !$if_product)) {
                                 $parent_category = $this->push_id_parent_category(array(), $if_category->term_id);
 
                                 if (
