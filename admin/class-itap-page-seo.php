@@ -203,7 +203,7 @@ class ItapPageSeo {
                                     count($parent_category) == count($parent_actual_category) &&
                                     $belowContent['parent'] != $if_category->parent
                                 ) {
-                                    $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['name'] . '"  qui contient un lien vers une catégorie latérale "' . $if_category->name . '" dont le parent n\'est pas le même ');
+                                    $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['slug'] . '"  qui contient un lien vers une catégorie latérale "' . $if_category->slug . '" dont le parent n\'est pas le même ');
                                     array_push($errors, $error);
                                 }
 
@@ -212,7 +212,7 @@ class ItapPageSeo {
                                     count(array_intersect($parent_category, $parent_actual_category)) == 0 &&
                                     $belowContent['parent'] != $if_category->term_id
                                 ) {
-                                    $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['name'] . '"  qui contient un lien vers une autre catégorie "' . $if_category->name . '" qui n\'est pas son enfant, ni son parent direct');
+                                    $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['slug'] . '"  qui contient un lien vers une autre catégorie "' . $if_category->slug . '" qui n\'est pas son enfant, ni son parent direct');
                                     array_push($errors, $error);
                                 }
                             }
