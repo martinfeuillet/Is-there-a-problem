@@ -189,14 +189,14 @@ class ItapPageSeo {
                                     }
                                 }
                                 $all_id_product_cat = array_unique($all_id_product_cat);
-                                if (!in_array($belowContent->term_id, $all_id_product_cat) && count(array_intersect($all_id_product_cat, $parent_actual_category)) == 0) {
+                                if (!in_array($belowContent['term_id'], $all_id_product_cat) && count(array_intersect($all_id_product_cat, $parent_actual_category)) == 0) {
                                     $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['name'] . '" qui contient un lien vers le produit "' . $product_or_cat . '" qui n\'est pas dans la catégorie,sous-catégorie ou sur-catégorie actuelle');
                                     array_push($errors, $error);
                                 }
                             }
 
                             // check if link is on a category
-                            if ($if_category && ($if_product->get_id() == 0 || !$if_product)) {
+                            if ($if_category && (!$if_product || $if_product->id == 0)) {
                                 $parent_category = $this->push_id_parent_category(array(), $if_category->term_id);
 
                                 if (
