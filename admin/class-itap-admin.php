@@ -87,11 +87,6 @@ class ItapAdmin {
 
     function itap_add_menu() {
         // only if we are on plugin page, call all the functions
-        global $wpdb;
-        $table_name = $wpdb->prefix . 'itap_archive';
-        $sql = "SELECT count(*) FROM $table_name";
-
-        $archives = $wpdb->get_var($sql);
 
         $total_integration_errors = get_option('total_integration_errors');
         $total_seo_errors = get_option('count_seo_errors');
