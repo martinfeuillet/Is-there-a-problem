@@ -84,7 +84,7 @@ class ItapPageSeo {
             $meta_title = get_term_meta($category->term_id, 'rank_math_title', true);
 
             if (preg_match('/archive/i', $meta_title) && $category->name != 'Uncategorized') {
-                $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', '', 'red');
+                $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', 'product_cat', 'red');
                 array_push($errors, $error);
             }
         }
