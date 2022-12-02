@@ -42,15 +42,16 @@ class ItapPageArchive {
             $codeError = substr($uniqId, -4);
             $productId = substr($uniqId, 0, -4);
             $product = wc_get_product($productId);
-            // get post author
-            array_push($infoProduct, array(
-                'uniqId' => $uniqId,
-                'productId' => $product->get_id(),
-                'product_title' => $product->get_title(),
-                'product_url' => get_edit_post_link($productId),
-                'product_author' => get_the_author_meta('display_name', get_post_field('post_author', $product->get_id())),
-                'problem' => $codeErrorFile[$codeError]
-            ));
+            if ($product) {
+                array_push($infoProduct, array(
+                    'uniqId' => $uniqId,
+                    'productId' => $product->get_id(),
+                    'product_title' => $product->get_title(),
+                    'product_url' => get_edit_post_link($productId),
+                    'product_author' => get_the_author_meta('display_name', get_post_field('post_author', $product->get_id())),
+                    'problem' => $codeErrorFile[$codeError]
+                ));
+            }
         }
         return $infoProduct;
     }
