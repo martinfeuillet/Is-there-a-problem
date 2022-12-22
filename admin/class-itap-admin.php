@@ -88,8 +88,8 @@ class ItapAdmin {
     function itap_add_menu() {
         // only if we are on plugin page, call all the functions
 
-        $total_integration_errors = get_option('total_integration_errors');
-        $total_seo_errors = get_option('count_seo_errors');
+        $total_integration_errors = get_option('total_integration_errors') > 0 ? get_option('total_integration_errors') : 0;
+        $total_seo_errors = get_option('count_seo_errors') > 0 ? get_option('count_seo_errors') : 0;
         $total_errors = $total_integration_errors + $total_seo_errors;
 
         add_menu_page('Problems', sprintf("Problems <span class='awaiting-mod'>%d</span>", $total_errors), 'publish_pages', 'is_there_a_problem', array($this, 'itap_page'), 'dashicons-admin-site', 100);

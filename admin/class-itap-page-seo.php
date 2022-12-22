@@ -123,8 +123,14 @@ class ItapPageSeo {
             'hide_empty' => false,
         );
         $categories = get_terms($args);
+        // get term meta product_cat 15
+        $meta = get_metadata('term', 15);
         $belowContents = array();
         foreach ($categories as $category) {
+            $category_meta = get_metadata('term', $category->term_id);
+            $noindex = unserialize($category_meta['rank_math_robots'][0]) ?? [];
+            $noindex = !empty($noindex) && in_array('noindex', $noindex) ? '1' : '0';
+
             $temptab = array();
             $temptab['term_id'] = $category->term_id;
             $temptab['name'] = $category->name;
@@ -132,12 +138,13 @@ class ItapPageSeo {
             $temptab['parent'] = $category->parent;
             $temptab['description-bas'] = get_term_meta($category->term_id, 'description-bas', true);
             $temptab['below_category_content'] = get_term_meta($category->term_id, 'below_category_content', true);
+            $temptab['noindex'] = $noindex;
             array_push($belowContents, $temptab);
         }
         $errors = array();
         //check the meta value of below content
         foreach ($belowContents as $belowContent) {
-            if ($belowContent['name'] != 'Uncategorized') {
+            if ($belowContent['name'] != 'Uncategorized' && $belowContent['noindex'] != '1') {
                 $content = $belowContent['below_category_content'] ? $belowContent['below_category_content'] :  $belowContent['description-bas'];
                 preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $content, $matches);
                 if (empty($content) && count($matches[1]) == 0) {
