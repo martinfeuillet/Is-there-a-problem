@@ -290,21 +290,12 @@ class ItapAdmin {
     public function itap_getErrorsFromRankMath(array $results): array {
         $errors     = array();
         foreach ($results as $result) {
-            $product          = wc_get_product($result['id']);
-            // get wp_title and wp_description
-            $url  = get_permalink($product->get_id());
-            $meta = get_meta_tags($url);
-
-            if ( ! isset($meta['description'])) {
-                $error = $this->itap_displayData($result, 'Produit qui n\'a pas de meta description', '1010');
-                array_push($errors, $error);
-            }
-            if ( ! isset( $meta['twitter:title']) ) {
-                $error = $this->itap_displayData($result, 'Produit qui n\'a pas de meta titre', '1011');
+            $product = wc_get_product($result['id']);
+            if ( ! get_post_meta($product->get_id(), 'rank_math_description', true)) {
+                $error = $this->itap_displayData($result, 'Produit qui a une meta description automatique, personnalisez la', '1010');
                 array_push($errors, $error);
             }
         }
-
         return $errors;
     }
 
