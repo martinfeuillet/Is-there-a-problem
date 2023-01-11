@@ -289,49 +289,18 @@ class ItapAdmin {
      */
     public function itap_getErrorsFromRankMath(array $results): array {
         $errors     = array();
-        $curly      = array();
-        $all_datas  = array();
-        $ch         = curl_multi_init();
         foreach ($results as $result) {
-            $product = wc_get_product($result['id']);
-            // url of the product
-            $url                       = esc_url(get_permalink($product->get_id()));
-            $curly[$product->get_id()] = curl_init();
-            curl_setopt($curly[$product->get_id()], CURLOPT_URL, $url);
-            curl_setopt($curly[$product->get_id()], CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($curly[$product->get_id()], CURLOPT_FOLLOWLOCATION, true);
-            curl_multi_add_handle($ch, $curly[$product->get_id()]);
-        }
+            $product          = wc_get_product($result['id']);
+            // get wp_title and wp_description
+            $url  = get_permalink($product->get_id());
+            $meta = get_meta_tags($url);
 
-        $running    = null;
-        do {
-            curl_multi_exec($ch, $running);
-        } while ($running > 0);
-
-        foreach ($curly as $id => $c) {
-            $all_datas[$id] = curl_multi_getcontent($c);
-            curl_multi_remove_handle($ch, $c);
-        }
-        curl_multi_close($ch);
-
-        foreach ($all_datas as $id => $html) {
-            $result = array_filter($results, function ($array) use ($id) {
-                return $array['id'] == $id;
-            });
-            $result = array_values($result);
-            // preg match title tag
-            preg_match('/<title>(.*?)<\/title>/', $html, $matches);
-            $title = $matches[1] ?? null;
-            if ( ! $title) {
-                // $result = array in $results who got the same id as $id
-                $error = $this->itap_displayData($result[0], 'Produit n\'a pas de meta titre', '1019');
+            if ( ! isset($meta['description'])) {
+                $error = $this->itap_displayData($result, 'Produit qui n\'a pas de meta description', '1010');
                 array_push($errors, $error);
             }
-
-            preg_match('/<meta.*?name="description".*?content="(.*?)".*?>/', $html, $matches);
-            $description = $matches[1] ?? null;
-            if ( ! $description) {
-                $error = $this->itap_displayData($result[0], 'Produit qui n\'a pas de meta description', '1010');
+            if ( ! isset( $meta['twitter:title']) ) {
+                $error = $this->itap_displayData($result, 'Produit qui n\'a pas de meta titre', '1011');
                 array_push($errors, $error);
             }
         }
