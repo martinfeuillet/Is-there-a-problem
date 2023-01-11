@@ -292,8 +292,9 @@ class ItapAdmin {
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
             // url of the product
-            $url  = get_permalink($product->get_id());
-            $html = file_get_contents($url);
+            $url     = get_permalink($product->get_id());
+            $context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
+            $html    = file_get_contents($url, false, $context);
             preg_match("/<title[^>]*>(.*?)<\/title>/i", $html, $matches);
             $title = $matches[1] ?? null;
             if ( ! $title) {

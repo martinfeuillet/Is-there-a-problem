@@ -77,8 +77,9 @@ class ItapPageSeo {
         );
         $categories = get_terms($args);
         foreach ($categories as $category) {
-            $url  = get_term_link($category->term_id, 'product_cat');
-            $html = file_get_contents($url);
+            $url     = get_term_link($category->term_id, 'product_cat');
+            $context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
+            $html    = file_get_contents($url, false, $context);
             preg_match("/<title[^>]*>(.*?)<\/title>/i", $html, $matches);
             $title = $matches[1] ?? null;
             if (preg_match('/archive/i', $title) && $category->name != 'Uncategorized') {
@@ -288,9 +289,10 @@ class ItapPageSeo {
     }
 
     public function itap_get_rank_math_opengraph_thumbnail() {
-        $errors = array();
-        $html   = file_get_contents(site_url());
-        $dom    = new DOMDocument();
+        $errors  = array();
+        $context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
+        $html    = file_get_contents(site_url(), false, $context);
+        $dom     = new DOMDocument();
         libxml_use_internal_errors(true);
         @$dom->loadHTML($html);
         libxml_use_internal_errors(false);
