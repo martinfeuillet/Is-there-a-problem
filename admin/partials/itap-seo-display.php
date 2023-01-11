@@ -1,6 +1,5 @@
 <div class="wrap is-there-a-problem-container">
     <p>Problèmes liés au référencement naturel</p>
-    <!-- <p class="problems_number">nombre de problèmes : </p> -->
 
     <table class="table-plugin">
         <thead>

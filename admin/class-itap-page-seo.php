@@ -1,22 +1,20 @@
 <?php
 
 class ItapPageSeo {
-
-    function __construct() {
+    public function __construct() {
         $this->itap_partials_seo();
     }
 
-
-    function itap_seoDisplayTab($category) {
+    public function itap_seoDisplayTab($category) {
         $allowed_html = array(
-            'div' => array(
+            'div'  => array(
                 'class' => array()
             ),
             'span' => array(
                 'class' => array()
             )
         );
-?>
+        ?>
         <tr style="background-color:<?php echo esc_html($category['color']) ?>; <?php echo esc_html($category['color']) == 'red' ? 'color : white' : '' ?>">
             <td><?php echo esc_html($category['term_id']) ?></td>
             <td><?php echo esc_html($category['name']) ?></td>
@@ -26,17 +24,17 @@ class ItapPageSeo {
     <?php
     }
 
-    function itap_seoDisplayTabLinks($category) {
+    public function itap_seoDisplayTabLinks($category) {
         $allowed_html = array(
-            'div' => array(
+            'div'  => array(
                 'class' => array()
             ),
             'span' => array(
                 'class' => array()
             )
         );
-    ?>
-        <tr style="background-color: <?php echo esc_html($category['color']) ?>;">
+        ?>
+        <tr style="background-color: <?php echo esc_html($category['color']) ?>;<?php echo esc_html($category['color']) == 'red' ? 'color : white' : '' ?>">
             <td><?php echo esc_html($category['term_id']) ?></td>
             <td><?php echo esc_html($category['name']) ?></td>
             <td><a target="_blank" href="<?php echo esc_url(site_url() . '/wp-admin/nav-menus.php?action=edit&menu=' . $category['term_id'] . '') ?>">click</a></td>
@@ -45,20 +43,20 @@ class ItapPageSeo {
 <?php
     }
 
-    function itap_seoDisplayData($result, string $problem, string $taxonomy = 'product_cat', $color = 'white') {
+    public function itap_seoDisplayData($result, string $problem, string $taxonomy = 'product_cat', $color = 'white') {
         return array(
-            'term_id' => $result['term_id'],
-            'name' => $result['name'],
-            'error' => $problem,
+            'term_id'   => $result['term_id'],
+            'name'      => $result['name'],
+            'error'     => $problem,
             'taxonomie' => $taxonomy,
-            'color' => $color
+            'color'     => $color
         );
     }
 
-    function itap_get_errors_no_categories_description() {
+    public function itap_get_errors_no_categories_description() {
         $errors = array();
-        $args = array(
-            'taxonomy' => 'product_cat',
+        $args   = array(
+            'taxonomy'   => 'product_cat',
             'hide_empty' => false,
         );
         $categories = get_terms($args);
@@ -71,19 +69,19 @@ class ItapPageSeo {
         return $errors;
     }
 
-    function itap_get_errors_from_meta_title() {
+    public function itap_get_errors_from_meta_title() {
         $errors = array();
-        $args = array(
-            'taxonomy' => 'product_cat',
+        $args   = array(
+            'taxonomy'   => 'product_cat',
             'hide_empty' => false,
         );
         $categories = get_terms($args);
-
-
         foreach ($categories as $category) {
-            $meta_title = get_term_meta($category->term_id, 'rank_math_title', true);
-
-            if (preg_match('/archive/i', $meta_title) && $category->name != 'Uncategorized') {
+            $url  = get_term_link($category->term_id, 'product_cat');
+            $html = file_get_contents($url);
+            preg_match("/<title[^>]*>(.*?)<\/title>/i", $html, $matches);
+            $title = $matches[1] ?? null;
+            if (preg_match('/archive/i', $title) && $category->name != 'Uncategorized') {
                 $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', 'product_cat', 'red');
                 array_push($errors, $error);
             }
@@ -91,11 +89,11 @@ class ItapPageSeo {
         return $errors;
     }
 
-    function itap_get_errors_no_tags_description() {
+    public function itap_get_errors_no_tags_description() {
         $errors = array();
         //get all tags
         $tags = get_terms(array(
-            'taxonomy' => 'product_tag',
+            'taxonomy'   => 'product_tag',
             'hide_empty' => false,
         ));
 
@@ -108,7 +106,8 @@ class ItapPageSeo {
         return $errors;
     }
 
-    function push_id_parent_category($array, $actual_id_cat) {
+    // helper function to get all parent categories
+    public function push_id_parent_category(array $array, int $actual_id_cat) {
         $parent = get_term($actual_id_cat, 'product_cat')->parent;
         if ($parent != 0) {
             array_push($array, $parent);
@@ -117,97 +116,95 @@ class ItapPageSeo {
         return $array;
     }
 
-    function itap_get_errors_below_category_content() {
+    // get errors from below content in product-cat
+    public function itap_get_errors_below_category_content(): array {
         $args = array(
-            'taxonomy' => 'product_cat',
+            'taxonomy'   => 'product_cat',
             'hide_empty' => false,
         );
-        $categories = get_terms($args);
-        // get term meta product_cat 15
-        $meta = get_metadata('term', 15);
+        $categories    = get_terms($args);
         $belowContents = array();
         foreach ($categories as $category) {
             $category_meta = get_metadata('term', $category->term_id);
-            $noindex = unserialize($category_meta['rank_math_robots'][0]) ?? [];
-            $noindex = !empty($noindex) && in_array('noindex', $noindex) ? '1' : '0';
+            $noindex       = unserialize($category_meta['rank_math_robots'][0]) ?? array();
+            $noindex       = ! empty($noindex) && in_array('noindex', $noindex) ? '1' : '0';
 
-            $temptab = array();
-            $temptab['term_id'] = $category->term_id;
-            $temptab['name'] = $category->name;
-            $temptab['slug'] = $category->slug;
-            $temptab['parent'] = $category->parent;
-            $temptab['description-bas'] = get_term_meta($category->term_id, 'description-bas', true);
+            $temptab                           = array();
+            $temptab['term_id']                = $category->term_id;
+            $temptab['name']                   = $category->name;
+            $temptab['slug']                   = $category->slug;
+            $temptab['parent']                 = $category->parent;
+            $temptab['description-bas']        = get_term_meta($category->term_id, 'description-bas', true);
             $temptab['below_category_content'] = get_term_meta($category->term_id, 'below_category_content', true);
-            $temptab['noindex'] = $noindex;
+            $temptab['noindex']                = $noindex;
             array_push($belowContents, $temptab);
         }
         $errors = array();
         //check the meta value of below content
         foreach ($belowContents as $belowContent) {
             if ($belowContent['name'] != 'Uncategorized' && $belowContent['noindex'] != '1') {
-                $content = $belowContent['below_category_content'] ? $belowContent['below_category_content'] :  $belowContent['description-bas'];
+                $content = $belowContent['below_category_content'] ? $belowContent['below_category_content'] : $belowContent['description-bas'];
                 preg_match_all('/<a href="(.*?)">(.*?)<\/a>/', $content, $matches);
                 if (empty($content) && count($matches[1]) == 0) {
                     $error = $this->itap_seoDisplayData($belowContent, 'Catégorie qui n\'as de contenu et de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                     array_push($errors, $error);
                 }
-                if (!empty($content) && count($matches[1]) == 0) {
+                if ( ! empty($content) && count($matches[1]) == 0) {
                     $error = $this->itap_seoDisplayData($belowContent, 'Catégorie qui ne contient pas de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                     array_push($errors, $error);
                 }
-                // check if content has less than 800 words
                 if (str_word_count($content) < 800) {
                     $error = $this->itap_seoDisplayData($belowContent, 'Catégorie qui contient moins de 800 mots dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                     array_push($errors, $error);
                 }
+                // PART LINK
                 //check if links in description below category are directed to equal or child category
-                if (!empty($content) && count($matches[1]) > 0) {
+                if ( ! empty($content) && count($matches[1]) > 0) {
                     foreach ($matches[1] as $match) {
-                        $path = substr(parse_url($match, PHP_URL_PATH), 1);
-                        $pathtab = array_filter(explode('/', $path));
+                        $path           = substr(parse_url($match, PHP_URL_PATH), 1);
+                        $pathtab        = array_filter(explode('/', $path));
                         $product_or_cat = end($pathtab);
 
                         //    know post type of the slug
-                        $if_product = get_page_by_path($product_or_cat, OBJECT, 'product');
-                        $if_product = $if_product ? wc_get_product($if_product->ID) : false;
+                        $if_product  = get_page_by_path($product_or_cat, OBJECT, 'product');
+                        $if_product  = $if_product ? wc_get_product($if_product->ID) : false;
                         $if_category = get_term_by('slug', $product_or_cat, 'product_cat');
 
-                        $parent_actual_category = $this->push_id_parent_category(array(), $belowContent['term_id']); //array of parent of the actual category
-                        $sameSite = parse_url($match, PHP_URL_HOST) == parse_url(site_url(), PHP_URL_HOST);
-                        // check if link is not external
-                        if (!$sameSite) {
+                        $parent_actual_category = $this->push_id_parent_category(array(), $belowContent['term_id']);
+                        $sameSite               = parse_url($match, PHP_URL_HOST) == parse_url(site_url(), PHP_URL_HOST);
+                        if ( ! $sameSite) {
                             $error = $this->itap_seoDisplayData($belowContent, 'Lien externe dans le meta-field "<i>Texte dessous catégorie de produits</i>"');
                             array_push($errors, $error);
                         }
 
                         if ($sameSite) {
                             // check if link is on a product
-                            if ($if_product && !$if_category) {
-                                $product_cat = get_the_terms($if_product->get_id(), 'product_cat');
+                            if ($if_product && ! $if_category) {
+                                $product_cat        = get_the_terms($if_product->get_id(), 'product_cat');
                                 $all_id_product_cat = array();
                                 foreach ($product_cat as $cat) {
                                     $all_id_product_cat[] = $cat->term_id;
                                     if ($cat->parent != 0) {
                                         $all_id_product_cat[] = $cat->parent;
-                                        $newterm = get_term($cat->parent, 'product_cat');
+                                        $newterm              = get_term($cat->parent, 'product_cat');
                                         if ($newterm->parent != 0) {
                                             $all_id_product_cat[] = $newterm->parent;
                                         }
                                     }
                                 }
                                 $all_id_product_cat = array_unique($all_id_product_cat);
-                                if (!in_array($belowContent['term_id'], $all_id_product_cat) && count(array_intersect($all_id_product_cat, $parent_actual_category)) == 0) {
+                                if ( ! in_array($belowContent['term_id'], $all_id_product_cat) && count(array_intersect($all_id_product_cat, $parent_actual_category)) == 0) {
                                     $error = $this->itap_seoDisplayData($belowContent, 'description sous catégorie "' . $belowContent['name'] . '" qui contient un lien vers le produit "' . $product_or_cat . '" qui n\'est pas dans la catégorie,sous-catégorie ou sur-catégorie actuelle');
                                     array_push($errors, $error);
                                 }
                             }
 
                             // check if link is on a category
-                            if ($if_category && (!$if_product || $if_product->id == 0)) {
+                            if ($if_category && ( ! $if_product || $if_product->id == 0)) {
                                 $parent_category = $this->push_id_parent_category(array(), $if_category->term_id);
 
                                 if (
-                                    !in_array($belowContent['term_id'], $parent_category) &&
+                                    ! in_array($belowContent['term_id'], $parent_category) &&
                                     count(array_intersect($parent_category, $parent_actual_category)) != 0 &&
                                     count($parent_category) == count($parent_actual_category) &&
                                     $belowContent['parent'] != $if_category->parent
@@ -217,7 +214,7 @@ class ItapPageSeo {
                                 }
 
                                 if (
-                                    !in_array($belowContent['term_id'], $parent_category) &&
+                                    ! in_array($belowContent['term_id'], $parent_category) &&
                                     count(array_intersect($parent_category, $parent_actual_category)) == 0 &&
                                     $belowContent['parent'] != $if_category->term_id
                                 ) {
@@ -233,28 +230,21 @@ class ItapPageSeo {
         return $errors;
     }
 
-
-
-
     /**
      * search for nofollow attributes on particular menu links
-     *
-     * @return array
      */
-    function itap_get_errors_nofollow_link() {
+    public function itap_get_errors_nofollow_link(): array {
         // search all link in the front page and check if they have a nofollow attribute
-        $errors = array();
+        $errors               = array();
         $specials_links_slugs = array('conditions-generales-de-vente', 'mentions-legales', 'politique-de-confidentialite', 'politique-de-livraison', 'avis-clients', 'mon-compte');
-        $menu = wp_get_nav_menus(); // term_id, name, slug of the menu
+        $menu                 = wp_get_nav_menus(); // term_id, name, slug of the menu
         foreach ($menu as $key) {
             $menus_id[] = $key->term_id;
         }
 
-        $categories = get_terms('product_cat', array('hide_empty' => false)); // term_id, name, description, parent of the category
-        // rank math noindex
+        $product_cats = get_terms('product_cat', array('hide_empty' => false));
 
         // get all slugs of links in menus
-        $slugs = array();
         $menu_product_cat = array();
         foreach ($menus_id as $id) {
             $menu = wp_get_nav_menu_items($id);
@@ -274,15 +264,22 @@ class ItapPageSeo {
             }
         }
 
-        // filter menu_product_cat to get only the product categories that are not in the menu
-        $product_tagid = array_diff(array_column($categories, 'term_id'), $menu_product_cat);
+        $product_cats_that_arent_in_menu = array_diff(array_column($product_cats, 'term_id'), $menu_product_cat);
+        $product_cats_that_are_in_menu   = array_intersect(array_column($product_cats, 'term_id'), $menu_product_cat);
 
-        foreach ($categories as $category) {
-            // if category don't have noindex
+        foreach ($product_cats as $category) {
             $noindex = get_term_meta($category->term_id, 'rank_math_robots', true);
-            if ($category->name != 'Uncategorized' &&  isset($noindex[0]) != 'noindex' && in_array($category->term_id, $product_tagid)) {
-                $data = array('term_id' => $category->term_id, 'name' => $category->name);
+            if ($category->name != 'Uncategorized' && isset($noindex[0]) != 'noindex' && in_array($category->term_id, $product_cats_that_arent_in_menu) && $category->count > 0) {
+                $data  = array('term_id' => $category->term_id, 'name' => $category->name);
                 $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' n\'est pas présente dans le menu principal', '', 'orange');
+                array_push($errors, $error);
+            }
+        }
+        foreach ($product_cats_that_are_in_menu as $cat_id ) {
+            $category = get_term($cat_id);
+            if ($category->count == 0) {
+                $data  = array('term_id' => $category->term_id, 'name' => $category->name);
+                $error = $this->itap_seoDisplayData($data, 'La catégorie ' . $category->slug . ' est présente dans le menu principal mais celle ci est vide, enlevez la ou rajoutez lui des produits ', '', 'orange');
                 array_push($errors, $error);
             }
         }
@@ -290,28 +287,28 @@ class ItapPageSeo {
         return $errors;
     }
 
-    function itap_get_rank_math_opengraph_thumbnail() {
+    public function itap_get_rank_math_opengraph_thumbnail() {
         $errors = array();
-        $html = file_get_contents(site_url());
-        $dom = new DOMDocument();
+        $html   = file_get_contents(site_url());
+        $dom    = new DOMDocument();
         libxml_use_internal_errors(true);
         @$dom->loadHTML($html);
         libxml_use_internal_errors(false);
-        $xpath = new DOMXPath($dom);
-        $metas = $xpath->query('//meta[@property="og:image"]');
+        $xpath   = new DOMXPath($dom);
+        $metas   = $xpath->query('//meta[@property="og:image"]');
         $ogImage = array();
         foreach ($metas as $meta) {
             $ogImage[] = $meta->getAttribute('content');
         }
-        if ($ogImage && !$ogImage[0]) {
-            $data = array('term_id' => 0, 'name' => bloginfo('name'));
+        if ($ogImage && ! $ogImage[0]) {
+            $data  = array('term_id' => 0, 'name' => bloginfo('name'));
             $error = $this->itap_seoDisplayData($data, 'le site actuel ne contient pas d\'image opengraph dans rank math section "titre et meta"', '', 'red');
             array_push($errors, $error);
         }
         return $errors;
     }
 
-    function get_errors_from_seo($fn_errors, $fn_display) {
+    public function get_errors_from_seo($fn_errors, $fn_display) {
         $errors = $fn_errors();
         if (is_array($errors) && count($errors) > 0) {
             foreach ($errors as $error) {
@@ -320,7 +317,7 @@ class ItapPageSeo {
         }
     }
 
-    function itap_partials_seo() {
+    public function itap_partials_seo() {
         if (isset($_GET['page']) && $_GET['page'] == 'is_there_a_problem_seo') {
             $total_problems = count($this->itap_get_errors_no_categories_description()) + count($this->itap_get_errors_no_tags_description()) + count($this->itap_get_errors_below_category_content()) + count($this->itap_get_errors_nofollow_link());
             update_option('count_seo_errors', $total_problems);

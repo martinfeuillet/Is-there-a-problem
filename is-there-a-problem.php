@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.4.5
+  Version: 1.4.6
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: Ingenius Agency
@@ -10,7 +10,9 @@
 
 */
 
-if (!defined('ABSPATH')) exit; // Exit if accessed directly
+if ( ! defined('ABSPATH')) {
+    exit;
+} // Exit if accessed directly
 
 define('ITAP_VERSION', '1.4.5');
 

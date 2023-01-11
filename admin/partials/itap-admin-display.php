@@ -11,7 +11,7 @@
                         <?php
                         //get all admin and shop manager
                         foreach ($admins as $user) {
-                        ?>
+                            ?>
                             <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
                         <?php
                         }
@@ -37,17 +37,27 @@
             <?php
             // filter data by integrator
             $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
-            // if ($this->lines < 290) $this->itap_getErrors('itap_no_schema_product', $results, '#DC3444');
-            if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
-            if ($this->lines < 290) $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
-            if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromImages', $results);
-            if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
-            if ($this->lines < 290) $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+                        // if ($this->lines < 290) $this->itap_getErrors('itap_no_schema_product', $results, '#DC3444');
+                        if ($this->lines < 290) {
+                            $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
+                        }
+                        if ($this->lines < 290) {
+                            $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
+                        }
+                        if ($this->lines < 290) {
+                            $this->itap_getErrors('itap_getErrorsFromImages', $results);
+                        }
+                        if ($this->lines < 290) {
+                            $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
+                        }
+                        if ($this->lines < 290) {
+                            $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+                        }
 
-            if (!$total_integration_errors) {
-                echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
-            }
-            ?>
+                        if ( ! $total_integration_errors) {
+                            echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
+                        }
+                        ?>
 
         </tbody>
     </table>

@@ -1,1 +1,4 @@
-/is-there-a-problem
+/.php-cs-fixer.php
+/vendor
+/composer.json
+/composer.lock
