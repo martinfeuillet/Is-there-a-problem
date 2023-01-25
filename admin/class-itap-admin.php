@@ -267,6 +267,9 @@ class ItapAdmin {
                 array_push($errors, $error);
             } else {
                 $image_metadata = get_post_meta($image_id, '_wp_attachment_metadata', 'true');
+                if ( ! $image_metadata['file']) {
+                    continue;
+                }
                 $upload_dir     = wp_upload_dir()['basedir'];
                 $base_path      = substr($image_metadata['file'], 0, 8);
                 $image_path     = $upload_dir . '/' . $base_path;
