@@ -76,17 +76,47 @@ class ItapPageSeo {
             'hide_empty' => false,
         );
         $categories = get_terms($args);
+        $urls       = array();
         foreach ($categories as $category) {
-            $url     = get_term_link($category->term_id, 'product_cat');
-            $context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
-            $html    = file_get_contents($url, false, $context);
-            preg_match("/<title[^>]*>(.*?)<\/title>/i", $html, $matches);
-            $title = $matches[1] ?? null;
+            $urls[$category->term_id]     = get_term_link($category->term_id, 'product_cat');
+        }
+
+        $mh       = curl_multi_init();
+        $channels = array();
+        $titles   = array();
+
+        foreach ($urls as $key => $url) {
+            $channels[$key] = curl_init();
+            curl_setopt($channels[$key], CURLOPT_URL, $url);
+            curl_setopt($channels[$key], CURLOPT_HEADER, 0);
+            curl_setopt($channels[$key], CURLOPT_RETURNTRANSFER, 1);
+            // curl_setopt($channels[$key], CURLOPT_NOBODY, true);
+            curl_multi_add_handle($mh, $channels[$key]);
+        }
+
+        $running = null;
+        do {
+            curl_multi_exec($mh, $running);
+        } while ($running);
+
+        $result = array();
+        foreach ($channels as $id => $c) {
+            $result[$id] = curl_multi_getcontent($c);
+            $doc         = new DOMDocument();
+            @$doc->loadHTML($result[$id]);
+            $titles[$id] = $doc->getElementsByTagName('title')->item(0)->nodeValue;
+            curl_multi_remove_handle($mh, $c);
+        }
+        curl_multi_close($mh);
+        // get meta title without using http request
+        foreach ($titles as $id => $title) {
+            $category = get_term($id, 'product_cat');
             if (preg_match('/archive/i', $title) && $category->name != 'Uncategorized') {
                 $error = $this->itap_seoDisplayData(json_decode(json_encode($category), true), 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le', 'product_cat', 'red');
                 array_push($errors, $error);
             }
         }
+
         return $errors;
     }
 
@@ -127,7 +157,7 @@ class ItapPageSeo {
         $belowContents = array();
         foreach ($categories as $category) {
             $category_meta = get_metadata('term', $category->term_id);
-            $noindex       = unserialize($category_meta['rank_math_robots'][0]) ?? array();
+            $noindex       =  isset($category_meta['rank_math_robots']) ? unserialize($category_meta['rank_math_robots'][0]) : array();
             $noindex       = ! empty($noindex) && in_array('noindex', $noindex) ? '1' : '0';
 
             $temptab                           = array();
