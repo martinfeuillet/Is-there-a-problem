@@ -322,6 +322,9 @@ class ItapPageSeo {
         $errors  = array();
         $context = stream_context_create(array('http' => array('header'=>'Connection: close\r\n')));
         $html    = file_get_contents(site_url(), false, $context);
+        if ( ! $html) {
+            return;
+        }
         $dom     = new DOMDocument();
         libxml_use_internal_errors(true);
         @$dom->loadHTML($html);
