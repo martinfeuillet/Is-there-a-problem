@@ -510,7 +510,7 @@ class ItapAdmin
             $product_attributes = $product->get_attributes();
             foreach ($product_attributes as $product_attribute) {
                 $product_tag = wc_get_attribute($product_attribute['id']);
-                if (strtolower($product_tag->name) === 'couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation']) {
+                if (strtolower($product_tag->name) === 'couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation'] && $product->get_type() === 'variable') {
                     $error = $this->itap_displayData($result, 'Le produit a une seule couleur,pas besoin de variations, décocher la case "utiliser pour les variations" pour la couleur', '1020');
                     array_push($errors, $error);
                 }
