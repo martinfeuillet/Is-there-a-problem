@@ -499,7 +499,9 @@ class ItapAdmin
         return $errors;
     }
 
-
+    /*
+     * method to report an error if a product has a variation with only one color
+     */
     public function itap_dont_allow_variation_if_only_one_attr_is_set_on_couleur(array $results): array
     {
         $errors = array();
@@ -507,8 +509,9 @@ class ItapAdmin
             $product = wc_get_product($result['id']);
             $product_attributes = $product->get_attributes();
             foreach ($product_attributes as $product_attribute) {
-                if ($product_attribute['name'] == 'pa_couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation']) {
-                    $error = $this->itap_displayData($result, 'Le produit a une seule couleur,pas besoin de variation, décocher la case "utiliser pour les variations" pour la couleur', '1020');
+                $product_tag = wc_get_attribute($product_attribute['id']);
+                if (strtolower($product_tag->name) === 'couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation']) {
+                    $error = $this->itap_displayData($result, 'Le produit a une seule couleur,pas besoin de variations, décocher la case "utiliser pour les variations" pour la couleur', '1020');
                     array_push($errors, $error);
                 }
             }
