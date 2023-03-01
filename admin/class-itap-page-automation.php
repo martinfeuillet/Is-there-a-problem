@@ -38,7 +38,10 @@ class ItapPageAutomation
                         foreach ($this->itap_fix_primary_cat() as $product) {
                             ?>
                             <tr class="row">
-                                <td><?php echo $product['product_name']; ?></td>
+                                <td>
+                                    <a target="_blank"
+                                       href="<?php echo $product['product_link'] ?>"><?php echo $product['product_name']; ?></a>
+                                </td>
                                 <td>
                                     <select name="select_primary_cat" id="select_primary_cat">
                                         <?php
@@ -101,6 +104,7 @@ class ItapPageAutomation
             if (!empty($primary_product_cat_children) && !get_post_meta($product->ID, 'itap_ignore_primary_cat', true)) {
                 $maybe_product_problem[] = array(
                     'product_id' => $product->ID,
+                    "product_link" => get_edit_post_link($product->ID),
                     'product_name' => $product->post_title,
                     'primary_product_cat' => $primary_product_cat,
                     'primary_product_cat_name' => $product_id_and_cat_names,
