@@ -1,8 +1,8 @@
 <?php
 
-$couleurs              = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
-$settings              = get_option('itap_settings');
-$total_words_min_page  = $settings['total_words_min_page'] ?? 200;
+$couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
+$settings = get_option('itap_settings');
+$total_words_min_page = $settings['total_words_min_page'] ?? 200;
 $total_words_min_block = $settings['total_words_min_block'] ?? 60;
 
 $codeErrorFile = array(
@@ -24,5 +24,6 @@ $codeErrorFile = array(
     '1016' => 'La page du produit contient moins de ' . $total_words_min_page . ' mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres',
     '1017' => 'produit qui ne contient pas de schema rank math',
     '1018' => 'Description-1, description-2,description-3,description principale ou description courte du produit qui contient une balise <h1>, effacez la',
-    '1019' => "produit qui n'a pas de meta titre"
+    '1019' => "produit qui n'a pas de meta titre",
+    '1020' => "produit qui n'a pas de meta description"
 );

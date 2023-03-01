@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.5.4
+  Version: 1.5.5
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: Ingenius Agency
@@ -10,18 +10,20 @@
 
 */
 
-if ( ! defined('ABSPATH')) {
+if (!defined('ABSPATH')) {
     exit;
 } // Exit if accessed directly
 
-define('ITAP_VERSION', '1.5.4');
+define('ITAP_VERSION', '1.5.5');
 
-function activate_itap() {
+function activate_itap()
+{
     require_once plugin_dir_path(__FILE__) . 'includes/class-itap-activator.php';
     Itap_Activator::activate();
 }
 
-function deactivate_itap() {
+function deactivate_itap()
+{
     require_once plugin_dir_path(__FILE__) . 'includes/class-itap-deactivator.php';
     Itap_Deactivator::deactivate();
 }
@@ -31,10 +33,12 @@ register_deactivation_hook(__FILE__, 'deactivate_itap');
 
 require plugin_dir_path(__FILE__) . 'includes/class-itap.php';
 
-function run_itap() {
+function run_itap()
+{
     $plugin = new Itap();
     $plugin->run();
 }
+
 run_itap();
 
 require 'plugin-update-checker-master/plugin-update-checker.php';

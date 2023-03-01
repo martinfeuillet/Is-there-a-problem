@@ -12,8 +12,9 @@
                         //get all admin and shop manager
                         foreach ($admins as $user) {
                             ?>
-                            <option value="<?php echo esc_attr($user->display_name); ?>" name=""><?php echo esc_attr($user->display_name); ?></option>
-                        <?php
+                            <option value="<?php echo esc_attr($user->display_name); ?>"
+                                    name=""><?php echo esc_attr($user->display_name); ?></option>
+                            <?php
                         }
                         ?>
                     </select>
@@ -24,40 +25,42 @@
     </div>
     <table class="table-plugin">
         <thead>
-            <tr class="thead-plugin">
-                <th class="thead-plugin-little">Id Produit</th>
-                <th class="thead-plugin-middle">Nom Produit</th>
-                <th class="thead-plugin-little">Url Produit</th>
-                <th class="thead-plugin-big">Problème remonté</th>
-                <th class="thead-plugin-little">Nom intégrateur</th>
-                <th class="thead-plugin-little">archiver</th>
-            </tr>
+        <tr class="thead-plugin">
+            <th class="thead-plugin-little">Id Produit</th>
+            <th class="thead-plugin-middle">Nom Produit</th>
+            <th class="thead-plugin-little">Url Produit</th>
+            <th class="thead-plugin-big">Problème remonté</th>
+            <th class="thead-plugin-little">Nom intégrateur</th>
+            <th class="thead-plugin-little">archiver</th>
+        </tr>
         </thead>
         <tbody class="tbody-plugin">
-            <?php
-            // filter data by integrator
-            $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
-                        // if ($this->lines < 290) $this->itap_getErrors('itap_no_schema_product', $results, '#DC3444');
-                        if ($this->lines < 290) {
-                            $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
-                        }
-                        if ($this->lines < 290) {
-                            $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
-                        }
-                        if ($this->lines < 290) {
-                            $this->itap_getErrors('itap_getErrorsFromImages', $results);
-                        }
-                        if ($this->lines < 290) {
-                            $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
-                        }
-                        if ($this->lines < 290) {
-                            $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
-                        }
-
-                        if ( ! $total_integration_errors) {
-                            echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
-                        }
-                        ?>
+        <?php
+        // filter data by integrator
+        $this->itap_getErrors('itap_getErrorsFromLinks', $results, '#DC3444');
+        // if ($this->lines < 290) $this->itap_getErrors('itap_no_schema_product', $results, '#DC3444');
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_getErrorFromBaliseAlt', $results);
+        }
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_getErrorFromVariableProducts', $results);
+        }
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_getErrorsFromImages', $results);
+        }
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_getErrorsFromRankMath', $results);
+        }
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_getErrorsFromDescriptions', $results);
+        }
+        if ($this->lines < 290) {
+            $this->itap_getErrors('itap_dont_allow_variation_if_only_one_attr_is_set_on_couleur', $results);
+        }
+        if (!$total_integration_errors) {
+            echo wp_kses("<tr><td colspan='5' class='congrats-plugin'>Aucune erreur détéctée , félicitations</td></tr>", array('td' => array('colspan' => array()), 'tr' => array('class' => array())));
+        }
+        ?>
 
         </tbody>
     </table>

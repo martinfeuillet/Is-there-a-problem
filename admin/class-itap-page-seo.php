@@ -231,7 +231,7 @@ class ItapPageSeo {
                             }
 
                             // check if link is on a category
-                            if ($if_category && ( ! $if_product || $if_product->id == 0)) {
+                            if ($if_category && ( ! $if_product ||  $if_product->get_id() == 0)) {
                                 $parent_category = $this->push_id_parent_category(array(), $if_category->term_id);
 
                                 if (

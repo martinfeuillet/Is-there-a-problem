@@ -249,3 +249,42 @@ svg path {
     outline: none;
     margin-bottom: 1rem;
 }
+
+
+/*automation*/
+
+.select_primary_cat_table{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.select_primary_cat_table > thead > tr > th{
+    padding: .5rem;
+    background-color: #253371;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.select_primary_cat_table tr td{
+    padding: .5rem;
+    border: 1px solid #253371;
+    border-radius: 0.5rem;
+    outline: none;
+    margin-bottom: 1rem;
+    background: #fff;
+}
+
+
+.select_primary_cat_table td{
+    text-align: center;
+}
+
+.select_primary_textarea{
+    width: 100%;
+    height: 300px;
+    border: 1px solid #253371;
+    border-radius: 0.5rem;
+    outline: none;
+    margin-bottom: 1rem;
+    background: #fff;
+}

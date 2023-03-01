@@ -55,7 +55,7 @@
                 action: "save_seo_quantum_api_key",
                 apiKey: apiKey.val(),
             },
-            success: (res) => {
+            success: () => {
                 apiKey.val("");
                 console.log("success");
             },
@@ -149,6 +149,7 @@
     });
 })(jQuery);
 
+
 // function that save the settings of the plugin
 (function ($) {
     const [
@@ -177,7 +178,7 @@
         $("#total_words_min_page"),
         $("#total_words_min_block"),
         $("#itap_submit"),
-    ];  
+    ];
     btn.on("click", () => {
         $.ajax({
             type: "POST",
@@ -206,10 +207,61 @@
             },
         });
     });
+})(jQuery);
 
+// all the function for automation page
+// function for change primary category on automation page
+(function ($) {
+    $(() => {
+        const button = $('.button_choice')
+        button.on('click', function () {
+            console.log()
+            $.ajax({
+                type: "POST",
+                url: my_ajax_object.ajaxurl,
+                data: {
+                    action: "change_primary_category",
+                    change_or_ignore: $(this).data('choice'),
+                    product_id: $(this).data('product-id'),
+                    new_cat_id: $(this).parent().parent().find('select').val()
+                },
+                success: (res) => {
+                    console.log(res);
+                    $(this).parent().parent().hide()
+                },
+                error: () => {
+                    alert("Une erreur est survenue, merci de reessayer plus tard");
+                },
+            });
+        })
+    })
+})(jQuery);
+
+// function for disable variation on color that have only one term
+(function ($) {
+    $(() => {
+        const button = $('.fix_variation_color')
+        button.on('click', function () {
+            button.text('correction en cours...')
+            $.ajax({
+                type: "GET",
+                url: my_ajax_object.ajaxurl,
+                data: {
+                    action: "fix_variation_color",
+                },
+                success: () => {
+                    button.text('corrigé')
+                    alert('correction effectuée')
+
+                },
+                error: () => {
+                    alert("Une erreur est survenue, merci de reessayer plus tard");
+                },
+            });
+        })
+    })
 })(jQuery);
 
 
 
 
-// trans
