@@ -329,15 +329,38 @@ class ItapAdmin
         return $errors;
     }
 
+    public function slugify($text)
+    {
+        // Strip html tags
+        $text = strip_tags($text);
+        // Replace non letter or digits by -
+        $text = preg_replace('~[^\pL\d]+~u', '-', $text);
+        // Transliterate
+        setlocale(LC_ALL, 'en_US.utf8');
+        $text = iconv('utf-8', 'us-ascii//TRANSLIT', $text);
+        // Remove unwanted characters
+        $text = preg_replace('~[^-\w]+~', '', $text);
+        // Trim
+        $text = trim($text, '-');
+        // Remove duplicate -
+        $text = preg_replace('~-+~', '-', $text);
+        // Lowercase
+        $text = strtolower($text);
+        // Check if it is empty
+        if (empty($text)) {
+            return 'n-a';
+        }
+        // Return result
+        return $text;
+    }
+
     /**
      * itap_getErrorFromVariableProducts
-     *
-     * @param array $results
      */
-    public function itap_getErrorFromVariableProducts($results): array
+    public function itap_getErrorFromVariableProducts(array $results): array
     {
         $errors = array();
-        $couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
+        $couleurs = array('argente', 'beigne', 'blanc', 'bleu', 'bleu-fonce', 'bordeaux', 'gris', 'jaune', 'bronze', 'marron', 'multicolore', 'noir', 'dore', 'orange', 'rose', 'rose-fonce', 'rouge', 'turquoise', 'vert', 'violet');
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
             // check the attributes of the product to know if the default variation is first element of each attribute
@@ -365,11 +388,16 @@ class ItapAdmin
                 }
                 // check if the terms of attribute 'pa_couleur' or 'couleur are in the list of colors
                 foreach ($attribute_variation as $attribute) {
-                    $attribute_name = $attribute['name'];
-                    if ($attribute_name == 'pa_couleur' || $attribute_name == 'couleur') {
-                        if (!in_array($terms[$attribute['name']], $couleurs) && $attribute['variation']) {
-                            $error = $this->itap_displayData($result, 'Produit variable dont la couleur définie ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(', ', $couleurs) . '</span></div>', '1004');
-                            array_push($errors, $error);
+                    $product_tag = wc_get_attribute($attribute['id']);
+                    $tag_name = $product_tag->name;
+                    if (isset($tag_name) && strtolower($tag_name) === 'couleur') {
+                        $terms = wc_get_product_terms($result['id'], $attribute['name'], array('fields' => 'slugs'));
+                        foreach ($terms as $term) {
+                            $term_slugify = $this->slugify($term);
+                            if (!in_array($term_slugify, $couleurs) && $attribute['variation']) {
+                                $error = $this->itap_displayData($result, 'Produit variable dont la couleur ' . $term_slugify . ' ne fait pas partie des <div class="tooltip">couleurs possibles<span class="tooltiptext">' . implode(', ', $couleurs) . '</span></div>', '1004');
+                                array_push($errors, $error);
+                            }
                         }
                     }
                 }
@@ -510,7 +538,7 @@ class ItapAdmin
             $product_attributes = $product->get_attributes();
             foreach ($product_attributes as $product_attribute) {
                 $product_tag = wc_get_attribute($product_attribute['id']);
-                if (strtolower($product_tag->name) === 'couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation'] && $product->get_type() === 'variable') {
+                if (isset($product_tag->name) && strtolower($product_tag->name) === 'couleur' && count($product_attribute['options']) == 1 && $product_attribute['variation'] && $product->get_type() === 'variable') {
                     $error = $this->itap_displayData($result, 'Le produit a une seule couleur,pas besoin de variations, décocher la case "utiliser pour les variations" pour la couleur', '1020');
                     array_push($errors, $error);
                 }

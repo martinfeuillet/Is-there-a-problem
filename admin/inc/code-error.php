@@ -1,6 +1,6 @@
 <?php
 
-$couleurs = array('rouge', 'bleu', 'vert', 'jaune', 'noir', 'blanc', 'gris', 'marron', 'orange', 'rose', 'violet', 'multicolore', 'kaki', 'fuchsia', 'doré', 'camouflage', 'camel', 'bordeaux', 'beige', 'argenté');
+$couleurs = array('argente', 'beigne', 'blanc', 'bleu', 'bleu-fonce', 'bordeaux', 'gris', 'jaune', 'bronze', 'marron', 'multicolore', 'noir', 'dore', 'orange', 'rose', 'rose-fonce', 'rouge', 'turquoise', 'vert', 'violet');
 $settings = get_option('itap_settings');
 $total_words_min_page = $settings['total_words_min_page'] ?? 200;
 $total_words_min_block = $settings['total_words_min_block'] ?? 60;
