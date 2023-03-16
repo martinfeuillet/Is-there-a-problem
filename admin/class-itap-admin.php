@@ -360,7 +360,7 @@ class ItapAdmin
     public function itap_getErrorFromVariableProducts(array $results): array
     {
         $errors = array();
-        $couleurs = array('argente', 'beigne', 'blanc', 'bleu', 'bleu-fonce', 'bordeaux', 'gris', 'jaune', 'bronze', 'marron', 'multicolore', 'noir', 'dore', 'orange', 'rose', 'rose-fonce', 'rouge', 'turquoise', 'vert', 'violet');
+        $couleurs = array('argente', 'beige', 'blanc', 'bleu', 'bleu-fonce', 'bordeaux', 'gris', 'jaune', 'bronze', 'marron', 'multicolore', 'noir', 'dore', 'orange', 'rose', 'rose-fonce', 'rouge', 'turquoise', 'vert', 'violet');
         foreach ($results as $result) {
             $product = wc_get_product($result['id']);
             // check the attributes of the product to know if the default variation is first element of each attribute
