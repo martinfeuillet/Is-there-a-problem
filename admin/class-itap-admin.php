@@ -405,9 +405,14 @@ class ItapAdmin
                     $error = $this->itap_displayData($result, 'Produit variable ou il manque une ou plusieurs variations dans le produit par défaut', '1005');
                     array_push($errors, $error);
                 }
-                if (array_diff($product->get_default_attributes(), $terms)) {
-                    $error = $this->itap_displayData($result, 'Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class="tooltip">catégories<span class="tooltiptext">Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l\'onglet attribut de produit</span></div>. ', '1006');
-                    array_push($errors, $error);
+                $default_attributes = $product->get_default_attributes();
+                foreach ($default_attributes as $key => $value) {
+                    $product_attributes = wc_get_product_terms($result['id'], $key, array('fields' => 'slugs'));
+                    if ($value !== $product_attributes[0]) {
+                        $error = $this->itap_displayData($result, 'Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class="tooltip">catégories<span class="tooltiptext">Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l\'onglet attribut de produit</span></div>. ', '1006');
+                        array_push($errors, $error);
+
+                    }
                 }
                 if (count($product->get_children()) == 0) {
                     $error = $this->itap_displayData($result, 'Produit variable qui n\'a pas de variations, ajoutez en ou passez le en produit simple', '1007');
