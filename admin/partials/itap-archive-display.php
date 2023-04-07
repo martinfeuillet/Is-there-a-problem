@@ -15,7 +15,7 @@
         <?php
         $archive = $this->itap_get_archive_from_database();
         foreach ( $archive as $error ) {
-            $this->itap_archive_display_tab( $error );
+            echo $this->itap_archive_display_tab( $error );
         }
         ?>
         </tbody>

@@ -18,22 +18,31 @@ class ItapPageAutomation
     }
 
     /**
+     * return all product
+     */
+    public function get_all_product() : array {
+        $args     = array(
+            'post_type'      => 'product' ,
+            'posts_per_page' => -1 ,
+            'post_status'    => 'publish' ,
+        );
+        $products = new WP_Query( $args );
+        return $products->posts;
+    }
+
+    /**
      * display html for automation page
      */
     public function itap_partials_automation() : void {
         require_once plugin_dir_path( __FILE__ ) . 'partials/itap-automation-display.php';
     }
 
+    /**
+     * return all product that have primary category that is not the parent of the product
+     */
     function itap_fix_primary_cat() : array {
-        $maybe_product_problem    = array();
-        $product_id_and_cat_names = array();
-        $args                     = array(
-            'post_type'      => 'product' ,
-            'posts_per_page' => -1 ,
-            'post_status'    => 'publish' ,
-        );
-        $products                 = new WP_Query( $args );
-        $products                 = $products->posts;
+        $maybe_product_problem = array();
+        $products              = $this->get_all_product();
         foreach ( $products as $product ) {
             $product_id_and_cat_names = array();
             $product_categories_ids   = wp_get_post_terms( $product->ID , 'product_cat' , array('fields' => 'ids') );
@@ -60,6 +69,31 @@ class ItapPageAutomation
 
         }
         return $maybe_product_problem;
+    }
+
+    /**
+     * return all simple products that have variations
+     */
+    function itap_show_product_simple_that_have_variations() : array {
+        $products          = $this->get_all_product();
+        $problems_products = array();
+        foreach ( $products as $product ) {
+            $product = wc_get_product( $product->ID );
+            if ( $product->is_type( 'simple' ) ) {
+                // try to know if it still exists variations for this product
+                $product_variable = new WC_Product_Variable( $product->get_id() );
+                $variations       = $product_variable->get_available_variations();
+                if ( ! empty( $variations ) ) {
+                    $problems_products[] = array(
+                        'product_id'   => $product->get_id() ,
+                        "product_link" => get_edit_post_link( $product->get_id() ) ,
+                        'product_name' => $product->get_name()
+                    );
+                }
+
+            }
+        }
+        return $problems_products;
     }
 
 }
