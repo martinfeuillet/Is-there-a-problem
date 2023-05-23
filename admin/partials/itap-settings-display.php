@@ -82,17 +82,17 @@ $itap_settings = get_option( 'itap_settings' );
 
                 </div>
                 <div>
-                    <label for="desc1"><h4>Total des mots minimum par page :</h4></label>
+                    <label for="desc1">Total des mots minimum par page :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_page'] ?? '200' ?>"
                                 id="total_words_min_page"></div>
                 </div>
                 <div>
-                    <label for="desc1"><h4>Total des mots minimum par bloc :</h4></label>
+                    <label for="desc1">Total des mots minimum par bloc :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_block'] ?? '60' ?>"
                                 id="total_words_min_block"></div>
                 </div>
                 <div>
-                    <label for="desc1"><h4>Total des mots minimum par categorie :</h4></label>
+                    <label for="desc1">Total des mots minimum par categorie :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_by_cat'] ?? '800' ?>"
                                 id="total_words_min_by_cat"></div>
                 </div>

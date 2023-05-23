@@ -142,7 +142,6 @@
         const btnImg1 = $("#itap_img_1");
         const btnImg2 = $("#itap_img_2");
         const btnImg3 = $("#itap_img_3");
-        const arrayBtn = [btnImg1, btnImg2, btnImg3];
         btn.on("change", () => {
             if (btn.prop("checked")) {
                 $(".custom_field_input").css("display", "block");
@@ -203,10 +202,10 @@
                     total_words_min_block: $("#total_words_min_block").val(),
                     total_words_min_by_cat: $("#total_words_min_by_cat").val(),
                 },
-                success: (res) => {
+                success: () => {
                     alert("Vos paramètres ont bien été enregistrés");
                 },
-                error: (err) => {
+                error: () => {
                     alert("Une erreur est survenue, merci de reessayer plus tard");
                 },
             });
