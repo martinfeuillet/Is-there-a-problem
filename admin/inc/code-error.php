@@ -29,5 +29,6 @@ $codeErrorFile = array(
     '1021' => "Produit variable qui dont une des variations ne contient pas de prix" ,
     '1022' => "Produit simple qui n'a pas de prix" ,
     '1023' => "Produit qui contient un lien mailto dont la valeur du href n'est pas égale à la valeur de la balise lien" ,
-    '1024' => "Produit ou le/les meta(s) field(s) image-description-1, 2 ou 3 est/sont vide, il doit être rempli"
+    '1024' => "Produit ou le/les meta(s) field(s) image-description-1, 2 ou 3 est/sont vide, il doit être rempli" ,
+    '1025' => "La description courte du produit doit être inférieure à 50 mots, enlevez du contenu"
 );

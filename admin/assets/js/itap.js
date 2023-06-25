@@ -201,6 +201,7 @@
                     total_words_min_page: $("#total_words_min_page").val(),
                     total_words_min_block: $("#total_words_min_block").val(),
                     total_words_min_by_cat: $("#total_words_min_by_cat").val(),
+                    total_words_min_short_desc: $("#total_words_min_short_desc").val(),
                 },
                 success: () => {
                     alert("Vos paramètres ont bien été enregistrés");
@@ -262,6 +263,7 @@
 
 
 })(jQuery);
+
 
 
 

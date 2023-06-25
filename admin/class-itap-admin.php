@@ -9,7 +9,7 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-aut
 class ItapAdmin
 {
     public int      $lines        = 0;
-    protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation');
+    protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation' , 'help');
     private string  $plugin_name;
     private string  $version;
 
@@ -17,8 +17,6 @@ class ItapAdmin
     public function __construct( $plugin_name , $version ) {
         $this->plugin_name = $plugin_name;
         $this->version     = $version;
-//        $total_integration_errors = count( $this->itap_get_errors_from_products( $results ) ) + count( $this->itap_get_errors_from_alt_descriptions( $results ) ) + count( $this->itap_get_errors_from_variable_products( $results ) ) + count( $this->itap_get_errors_from_images( $results ) ) + count( $this->itap_get_errors_from_rank_math( $results ) ) + count( $this->itap_get_errors_from_descriptions( $results ) ) + count( $this->itap_dont_allow_variation_if_only_one_attr_is_set_on_couleur( $results ) ) - $count_archives;
-//        update_option( 'total_integration_errors' , $total_integration_errors );
 
         add_action( 'admin_menu' , array($this , 'itap_add_menu') );
 
@@ -35,7 +33,6 @@ class ItapAdmin
         add_action( 'wp_ajax_itap_save_settings' , array($ItapPageSettings , 'itap_save_settings') );
         add_action( 'wp_ajax_fix_primary_cat' , array($ItapPageAutomation , 'itap_fix_primary_cat') );
         add_action( 'wp_ajax_change_primary_category' , array($ItapPageAutomation , 'itap_change_primary_category') );
-//        add_action( 'wp_ajax_fix_variation_color' , array($ItapPageAutomation , 'itap_dont_allow_variation_if_only_one_attr_is_set_on_couleur') );
 
     }
 
@@ -102,17 +99,22 @@ class ItapAdmin
      * Add menu to the admin area
      */
     public function itap_add_menu() : void {
-        $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) : 0;
-        $total_seo_errors         = get_option( 'count_seo_errors' ) > 0 ? get_option( 'count_seo_errors' ) : 0;
+        global $wpdb;
+        $tablename                = $wpdb->prefix . 'itap_archive';
+        $count_archives           = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename" );
+        $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) - $count_archives : 0;
+        $total_seo_errors         = get_option( 'count_seo_errors' ) ?? 0;
         $total_errors             = $total_integration_errors + $total_seo_errors;
 
         add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%d</span>" , $total_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
         add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%d</span>" , $total_integration_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
         add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%d</span>" , $total_seo_errors ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
-        add_submenu_page( 'is_there_a_problem' , 'Archives ' , 'Archives' , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
-        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
+        add_submenu_page( 'is_there_a_problem' , 'Archives' , sprintf( "Archives <span class='awaiting-mod'>%d</span>" , $count_archives ) , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
+//        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
         add_submenu_page( 'is_there_a_problem' , 'Reglages ' , 'Reglages' , 'publish_pages' , 'itap_reglages' , array($this , 'itap_page_settings') );
+        add_submenu_page( 'is_there_a_problem' , 'Help' , 'Help' , 'publish_pages' , 'help' , array($this , 'itap_page_help') );
+
     }
 
     /**
@@ -145,9 +147,15 @@ class ItapAdmin
     /**
      * Display the SEO Quantum page
      */
-    public function itap_page_seoquantum() : void {
-        $ItapPageSeoQuantum = new ItapPageSeoQuantum();
-        $ItapPageSeoQuantum->itap_seo_quantum_displayTab();
+//    public function itap_page_seoquantum() : void {
+//        $ItapPageSeoQuantum = new ItapPageSeoQuantum();
+//        $ItapPageSeoQuantum->itap_seo_quantum_displayTab();
+//    }
+    /**
+     * Display the SEO Quantum page
+     */
+    public function itap_page_help() : void {
+        require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/itap-help-display.php';
     }
 
     /**
@@ -166,6 +174,28 @@ class ItapAdmin
             require_once plugin_dir_path( __FILE__ ) . 'partials/itap-admin-display.php';
         }
     }
+
+    /**
+     * @param array $result array that represents a product that has a problem
+     * @param string $problem the problem
+     * @param string $codeError the code of the problem
+     * @param string $color color of the error
+     */
+    public function itap_display_data( array $result , string $problem , string $codeError , string $color = "" ) : array {
+        return array(
+            'uniqId'      => $result['id'] . $codeError ,
+            'id'          => $result['id'] ,
+            'title'       => $result['title'] ,
+            'url'         => $result['url'] ,
+            'author_name' => $result['author_name'] ,
+            'imageUrl'    => $result['imageUrl'] ,
+            'url_edit'    => get_edit_post_link( $result['id'] ) ,
+            'alt'         => $result['alt'] ,
+            'error'       => $problem ,
+            "color"       => $color ,
+        );
+    }
+
 
     /**
      * get all the product and return it
@@ -220,10 +250,13 @@ class ItapAdmin
                 }
             }
         }
+        update_option( 'total_integration_errors' , count( $errors ) );
+
         return $errors;
     }
 
     /**
+     * IN
      * List all the products that have a problem :
      * - product that has a link in the description
      * - product that has a div in the description
@@ -280,29 +313,8 @@ class ItapAdmin
         return $errors;
     }
 
-
     /**
-     * @param array $result array that represents a product that has a problem
-     * @param string $problem the problem
-     * @param string $codeError the code of the problem
-     * @param string $color color of the error
-     */
-    public function itap_display_data( array $result , string $problem , string $codeError , string $color = "" ) : array {
-        return array(
-            'uniqId'      => $result['id'] . $codeError ,
-            'id'          => $result['id'] ,
-            'title'       => $result['title'] ,
-            'url'         => $result['url'] ,
-            'author_name' => $result['author_name'] ,
-            'imageUrl'    => $result['imageUrl'] ,
-            'url_edit'    => get_edit_post_link( $result['id'] ) ,
-            'alt'         => $result['alt'] ,
-            'error'       => $problem ,
-            "color"       => $color ,
-        );
-    }
-
-    /**
+     * IN
      * Return an error if a product has no alt text on the image, or alt text is too short
      * @param array $result product that possibly has a problem
      */
@@ -317,6 +329,7 @@ class ItapAdmin
     }
 
     /**
+     * IN
      * Return an error if a product has no price
      * @param array $result product that possibly has a problem
      */
@@ -342,6 +355,7 @@ class ItapAdmin
 
 
     /**
+     * IN
      * Return an error if :
      * - variable product has no default product
      * - variable product has an attribute that is not in the list of colors
@@ -404,15 +418,9 @@ class ItapAdmin
         return $errors;
     }
 
-//    public function itap_get_errors_from_quality_and_existence_of_images( array $result ) : array {
-//        $errors        = array();
-//        $image         = get_post_thumbnail_id( $result['id'] );
-//        $image_gallery = get_post_meta( $result['id'] , '_product_image_gallery' , true );
-//
-//    }
-
 
     /**
+     * IN
      * Check if WordPress create enough images sizes
      * @param array $result the product
      */
@@ -443,6 +451,7 @@ class ItapAdmin
     }
 
     /**
+     * IN
      * get errors from rank math product description who hasn't been filled
      * @param array $results product that we want to check
      */
@@ -456,6 +465,7 @@ class ItapAdmin
     }
 
     /**
+     * IN
      * check if the product have meta fields images filled
      * @param $result array the product that we want to check
      * @return array|void
@@ -493,14 +503,16 @@ class ItapAdmin
 
 
     /**
+     * IN
      * Check in settings fields to search for errors :
      * - if the product does not have enough words (total and per field)
      * @param array $result product that we want to check
      */
     public function itap_get_errors_from_descriptions( array $result ) : array {
-        $errors   = array();
-        $product  = wc_get_product( $result['id'] );
-        $settings = get_option( 'itap_settings' );
+        $errors                     = array();
+        $product                    = wc_get_product( $result['id'] );
+        $settings                   = get_option( 'itap_settings' );
+        $total_words_min_short_desc = $settings['total_words_min_short_desc'] ?? 50;
         if ( $settings ) {
             $possible_desc = array(
                 $settings['short_desc'] ? $product->get_short_description() : null ,
@@ -536,11 +548,14 @@ class ItapAdmin
                 $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres' , $total_words_min_page ) , '1016' );
             }
 
+            if ( str_word_count( $product->get_short_description() ) > $total_words_min_short_desc ) {
+                $errors[] = $this->itap_display_data( $result , 'La description courte du produit doit être inférieure à ' . $total_words_min_short_desc . ' mots, enlevez du contenu' , '1025' );
+            }
+
         } else {
-            $description1      = $product->get_meta( 'description-1' ) ?? null;
-            $description2      = $product->get_meta( 'description-2' ) ?? null;
-            $short_description = $product->get_short_description();
-            if ( str_word_count( $description1 ) + str_word_count( $description2 ) + str_word_count( $short_description ) < 200 ) {
+            $description1 = $product->get_meta( 'description-1' ) ?? null;
+            $description2 = $product->get_meta( 'description-2' ) ?? null;
+            if ( str_word_count( $description1 ) + str_word_count( $description2 ) + str_word_count( $product->get_short_description() ) < 200 ) {
                 $errors[] = $this->itap_display_data( $result , 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu' , '1013' );
             }
         }
@@ -548,6 +563,7 @@ class ItapAdmin
     }
 
     /**
+     * IN
      * Error if the product has a variation with only one color
      * @param array $result product that we want to check
      */
@@ -621,6 +637,7 @@ class ItapAdmin
 
 
     /**
+     * IN
      * Check if product has same slug of his category
      * @param array $results list of all the products
      */

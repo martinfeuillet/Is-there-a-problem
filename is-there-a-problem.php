@@ -2,7 +2,7 @@
 /*
   Plugin Name: Is there a problem
   Description: tell you if there are integration's problem with your website
-  Version: 1.6.2
+  Version: 1.6.3
   author URI: https://ingenius.agency/
   Text Domain: is-there-a-problem
   Author: Ingenius Agency
@@ -10,31 +10,28 @@
 
 */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 } // Exit if accessed directly
 
-define('ITAP_VERSION', '1.6.2');
+define( 'ITAP_VERSION' , '1.6.3' );
 
-function activate_itap()
-{
-    require_once plugin_dir_path(__FILE__) . 'includes/class-itap-activator.php';
+function activate_itap() {
+    require_once plugin_dir_path( __FILE__ ) . 'includes/class-itap-activator.php';
     Itap_Activator::activate();
 }
 
-function deactivate_itap()
-{
-    require_once plugin_dir_path(__FILE__) . 'includes/class-itap-deactivator.php';
+function deactivate_itap() {
+    require_once plugin_dir_path( __FILE__ ) . 'includes/class-itap-deactivator.php';
     Itap_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_itap');
-register_deactivation_hook(__FILE__, 'deactivate_itap');
+register_activation_hook( __FILE__ , 'activate_itap' );
+register_deactivation_hook( __FILE__ , 'deactivate_itap' );
 
-require plugin_dir_path(__FILE__) . 'includes/class-itap.php';
+require plugin_dir_path( __FILE__ ) . 'includes/class-itap.php';
 
-function run_itap()
-{
+function run_itap() {
     $plugin = new Itap();
     $plugin->run();
 }
@@ -43,10 +40,10 @@ run_itap();
 
 require 'plugin-update-checker-master/plugin-update-checker.php';
 $myUpdateChecker = Puc_v4_Factory::buildUpdateChecker(
-    'https://github.com/martinfeuillet/Is-there-a-problem',
-    __FILE__, //Full path to the main plugin file or functions.php.
+    'https://github.com/martinfeuillet/Is-there-a-problem' ,
+    __FILE__ , //Full path to the main plugin file or functions.php.
     'is_there_a_problem'
 );
 
 //Set the branch that contains the stable release.
-$myUpdateChecker->setBranch('master');
+$myUpdateChecker->setBranch( 'master' );

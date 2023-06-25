@@ -8,7 +8,7 @@ $itap_settings = get_option( 'itap_settings' );
         <div>
             <input type="checkbox" name="short_desc"
                    id="short_desc" <?php echo $itap_settings['short_desc'] ? 'checked' : '' ?>>
-            <label for="desc1">short description</label>
+            <label for="short_desc">short description</label>
         </div>
         <div>
             <input type="checkbox" name="desc1" id="desc1" <?php echo $itap_settings['desc1'] ? 'checked' : '' ?>>
@@ -82,19 +82,26 @@ $itap_settings = get_option( 'itap_settings' );
 
                 </div>
                 <div>
-                    <label for="desc1">Total des mots minimum par page :</label>
+                    <label for="total_words_min_page">Total des mots minimum par page :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_page'] ?? '200' ?>"
                                 id="total_words_min_page"></div>
                 </div>
                 <div>
-                    <label for="desc1">Total des mots minimum par bloc :</label>
+                    <label for="total_words_min_block">Total des mots minimum par bloc :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_block'] ?? '60' ?>"
                                 id="total_words_min_block"></div>
                 </div>
                 <div>
-                    <label for="desc1">Total des mots minimum par categorie :</label>
+                    <label for="total_words_min_by_cat">Total des mots minimum par categorie :</label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_by_cat'] ?? '800' ?>"
                                 id="total_words_min_by_cat"></div>
+                </div>
+                <div>
+                    <label for="total_words_min_short_desc">Total des mots maximum pour la short description de produit
+                        (50 par
+                        défaut)</label>
+                    <div><input type="text" value="<?php echo $itap_settings['total_words_min_short_desc'] ?? '50' ?>"
+                                id="total_words_min_short_desc"></div>
                 </div>
                 <button id="itap_submit">Enregistrer les paramètres</button>
             </div>

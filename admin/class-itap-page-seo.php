@@ -11,8 +11,8 @@ class ItapPageSeo
      */
     public function itap_partials_seo() : void {
         if ( isset( $_GET['page'] ) && $_GET['page'] == 'is_there_a_problem_seo' ) {
-//            $total_problems = count( $this->itap_get_errors_no_categories_description() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_below_category_content() ) + count( $this->itap_get_errors_nofollow_link() );
-//            update_option( 'count_seo_errors' , $total_problems );
+            $total_problems = count( $this->itap_get_rank_math_opengraph_thumbnail() ) + count( $this->itap_get_errors_from_meta_title() ) + count( $this->itap_no_category_or_attribute_with_numbers_in_slug() ) + count( $this->itap_get_errors_nofollow_link() ) + count( $this->itap_get_errors_from_product_cat() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_from_product_attr() ) + count( $this->itap_get_errors_from_product_tag() );
+            update_option( 'count_seo_errors' , $total_problems );
             require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/itap-seo-display.php';
         }
     }
@@ -22,12 +22,13 @@ class ItapPageSeo
      * @param object $category that search on it
      * @return array|void
      */
-    public function itap_get_errors_no_categories_description( object $category ) {
+    public function itap_get_errors_no_categories_description( object $category , string $taxonomy = 'product_cat' ) : array {
         $errors = array();
         if ( empty( $category->description ) && $category->name != 'Uncategorized' ) {
             $category_array = (array) $category;
-            return $this->itap_seo_display_data( $category_array , 'Pas de description pour cette catégorie' );
+            return $this->itap_seo_display_data( $category_array , 'Pas de description pour cette catégorie' , $taxonomy );
         }
+        return $errors;
 
     }
 
@@ -48,6 +49,7 @@ class ItapPageSeo
     }
 
     /**
+     * IN
      * Error if a tag has no description
      */
     public function itap_get_errors_no_tags_description() : array {
@@ -66,6 +68,7 @@ class ItapPageSeo
     }
 
     /**
+     * IN
      * get different errors for below category content :
      * - no content and no links
      * - not only child links or direct parent links
@@ -83,7 +86,7 @@ class ItapPageSeo
         $categories    = get_terms( $args );
         $belowContents = array();
         foreach ( $categories as $category ) {
-            if ( $this->itap_get_errors_no_categories_description( $category ) ) {
+            if ( $this->itap_get_errors_no_categories_description( $category , 'product_cat' ) ) {
                 $errors[] = $this->itap_get_errors_no_categories_description( $category );
             }
             $category_meta   = get_metadata( 'term' , $category->term_id );
@@ -109,7 +112,8 @@ class ItapPageSeo
                     'no_h2_in_below_content' ,
                     'no_title_since_300_words' ,
                     'miscategorization_of_title' ,
-                    'itap_error_if_mailto_href_dont_have_the_same_value_of_a_tag'
+                    'itap_error_if_mailto_href_dont_have_the_same_value_of_a_tag' ,
+                    'no_meta_description_in_below_content' ,
                 );
                 foreach ( $functions as $function ) {
                     foreach ( $this->$function( $content , $belowContent ) as $error ) {
@@ -124,26 +128,187 @@ class ItapPageSeo
     }
 
     /**
-     * return error if there isn't any h2 in the below content
-     * @param $content string that contains the content of the meta field
-     * @param $belowContent array that contains the error to display
+     * IN
+     * get different errors for below tag content :
+     * - no content and no links
+     * - not enough words
+     *
+     * @return array
      */
-    public function no_h2_in_below_content( string $content , array $belowContent ) : array {
-        $errors = array();
-        preg_match_all( '/<h2>(.*?)<\/h2>/s' , $content , $matches );
-        if ( ! empty( $content ) && count( $matches[1] ) == 0 ) {
-            $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>Texte dessous catégorie de produits</i>' doit contenir des balises h2 (ou Titre 2), celle ci n'en contient pas" );
+    public function itap_get_errors_from_product_tag() {
+        if ( ! is_plugin_active( 'ingenius-below-content/ingenius-below-content.php' ) ) {
+            return array();
+        }
+
+        $args             = array(
+            'taxonomy'   => 'product_tag' ,
+            'hide_empty' => false ,
+        );
+        $errors           = array();
+        $tags             = get_terms( $args );
+        $belowTagContents = array();
+        foreach ( $tags as $tag ) {
+            if ( $this->itap_get_errors_no_categories_description( $tag , "product_tag" ) ) {
+                $errors[] = $this->itap_get_errors_no_categories_description( $tag );
+            }
+            $tag_meta           = get_metadata( 'term' , $tag->term_id );
+            $noindex            = isset( $tag_meta['rank_math_robots'] ) ? unserialize( $tag_meta['rank_math_robots'][0] ) : array();
+            $noindex            = ! empty( $noindex ) && in_array( 'noindex' , $noindex ) ? '1' : '0';
+            $belowTagContents[] = array(
+                'term_id'           => $tag->term_id ,
+                'name'              => $tag->name ,
+                'slug'              => $tag->slug ,
+                'parent'            => $tag->parent ,
+                'below_tag_content' => get_term_meta( $tag->term_id , 'below_tag_content' , true ) ,
+                'noindex'           => $noindex ,
+
+            );
+        }
+
+        foreach ( $belowTagContents as $belowTagContent ) {
+            if ( $belowTagContent['name'] !== 'Uncategorized' && $belowTagContent['noindex'] != '1' ) {
+                $content   = $belowTagContent['below_tag_content'];
+                $functions = array(
+                    'itap_get_errors_from_below_cat_content' ,
+                    'no_h2_in_below_content' ,
+                    'no_title_since_300_words' ,
+                    'miscategorization_of_title' ,
+                    'itap_error_if_mailto_href_dont_have_the_same_value_of_a_tag' ,
+                    'no_meta_description_in_below_content' ,
+                );
+                foreach ( $functions as $function ) {
+                    foreach ( $this->$function( $content , $belowTagContent , "product_tag" ) as $error ) {
+                        if ( ! empty( $error ) ) {
+                            $errors[] = $error;
+                        }
+                    }
+                }
+            }
         }
         return $errors;
     }
 
     /**
+     * IN
+     * get different errors for below attribute content :
+     * - no content and no links
+     * - not enough words
+     *
+     * @return array
+     */
+    public function itap_get_errors_from_product_attr() {
+        if ( ! is_plugin_active( 'ingenius-below-content/ingenius-below-content.php' ) ) {
+            return array();
+        }
+        $errors = array();
+
+        // get all product attributes
+        $attributes = wc_get_attribute_taxonomies();
+        foreach ( $attributes as $attribute ) {
+            // get all terms for each attribute
+            $attribute_slug    = wc_attribute_taxonomy_name( $attribute->attribute_name );
+            $terms             = get_terms( array(
+                'taxonomy'   => $attribute_slug ,
+                'hide_empty' => false ,
+            ) );
+            $belowAttrContents = array();
+            foreach ( $terms as $term ) {
+                $term_meta           = get_metadata( 'term' , $term->term_id );
+                $noindex             = isset( $term_meta['rank_math_robots'] ) ? unserialize( $term_meta['rank_math_robots'][0] ) : array();
+                $noindex             = ! empty( $noindex ) && in_array( 'noindex' , $noindex ) ? '1' : '0';
+                $belowAttrContents[] = array(
+                    'term_id'            => $term->term_id ,
+                    'name'               => $term->name ,
+                    'slug'               => $term->slug ,
+                    'parent'             => $term->parent ,
+                    'below_attr_content' => get_term_meta( $term->term_id , 'below_attr_content' , true ) ,
+                    'noindex'            => $noindex ,
+
+                );
+            }
+
+            foreach ( $belowAttrContents as $belowAttrContent ) {
+                if ( $belowAttrContent['name'] !== 'Uncategorized' && $belowAttrContent['noindex'] != '1' ) {
+                    $content   = $belowAttrContent['below_attr_content'];
+                    $functions = array(
+                        'itap_get_errors_from_below_cat_content' ,
+                        'no_h2_in_below_content' ,
+                        'no_title_since_300_words' ,
+                        'miscategorization_of_title' ,
+                        'itap_error_if_mailto_href_dont_have_the_same_value_of_a_tag' ,
+                        'no_meta_description_in_below_content' ,
+                    );
+                    foreach ( $functions as $function ) {
+                        foreach ( $this->$function( $content , $belowAttrContent , $attribute_slug ) as $error ) {
+                            if ( ! empty( $error ) ) {
+                                $errors[] = $error;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $errors;
+    }
+
+    /**
+     * IN
+     * return error if there isn't any meta description in the below content
+     * @param $content string that contains the content of the meta field
+     * @param $belowContent array that contains the error to display
+     */
+    public function no_meta_description_in_below_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
+        $errors = array();
+        if ( $taxonomy !== "product_cat" ) {
+            return array();
+        }
+        $rank_math_meta = get_metadata( 'term' , $belowContent['term_id'] , 'rank_math_description' , true );
+        if ( ! empty( $content ) && empty( $rank_math_meta ) ) {
+            $errors[] = $this->itap_seo_display_data( $belowContent , "Chaque catégorie doit avoir une meta description, celle ci est vide" );
+        }
+        return $errors;
+    }
+
+    /**
+     * IN
+     * return error if there isn't any h2 in the below content
+     * @param $content string that contains the content of the meta field
+     * @param $belowContent array that contains the error to display
+     */
+    public function no_h2_in_below_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
+        if ( $taxonomy == "product_cat" ) {
+            $metafield = "Texte dessous catégorie de produits";
+        } elseif ( $taxonomy == "product_tag" ) {
+            $metafield = "below_tag_content";
+        } else {
+            $metafield = "below_attr_content";
+        }
+        $errors = array();
+        preg_match_all( '/<h2>(.*?)<\/h2>/s' , $content , $matches );
+        if ( ! empty( $content ) && count( $matches[1] ) == 0 ) {
+            $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>$metafield</i>' doit contenir des balises h2 (ou Titre 2), celle ci n'en contient pas" , $taxonomy );
+        }
+        return $errors;
+    }
+
+    /**
+     * IN
      * return errors if there isn't any title since 300 words
      * @param $content string that contains the content of the meta field
      * @param $belowContent array that contains the error to display
      */
-    public function no_title_since_300_words( string $content , array $belowContent ) : array {
+    public function no_title_since_300_words( string $content , array $belowContent , $taxonomy = 'product_cat' ) : array {
         $errors = array();
+        if ( $taxonomy == "product_cat" ) {
+            $metafield = "Texte dessous catégorie de produits";
+        } elseif ( $taxonomy == "product_tag" ) {
+            $metafield = "below_tag_content";
+        } else {
+            $metafield = "below_attr_content";
+        }
         $words  = explode( ' ' , $content );
         $count  = 0;
         $titles = array("<h1>" , "</h1>" , "<h2>" , "</h2>" , "<h3>" , "</h3>" , "<h4>" , "</h4>" , "<h5>" , "</h5>" , "<h6>" , "</h6>");
@@ -155,20 +320,28 @@ class ItapPageSeo
                 $count++;
             }
             if ( $count == 300 ) {
-                $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>Texte dessous catégorie de produits</i>' doit contenir des titres tous les 300 mots, celle ci n'en contient pas" );
+                $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>$metafield</i>' doit contenir des titres tous les 300 mots, celle ci n'en contient pas" , $taxonomy );
             }
         }
         return $errors;
     }
 
     /**
+     * IN
      * there can't be a h2 if there is no h1, there can't be a h3 if there is no h2, etc...
      * @param $content string that contains the content of the meta field
      * @param $belowContent array that contains the error to display
      */
-    public function miscategorization_of_title( string $content , array $belowContent ) : array {
-        $valid        = true;
-        $errors       = array();
+    public function miscategorization_of_title( string $content , array $belowContent , $taxonomy = 'product_cat' ) : array {
+        $valid  = true;
+        $errors = array();
+        if ( $taxonomy == "product_cat" ) {
+            $metafield = "Texte dessous catégorie de produits";
+        } elseif ( $taxonomy == "product_tag" ) {
+            $metafield = "below_tag_content";
+        } else {
+            $metafield = "below_attr_content";
+        }
         $last_heading = 0;
         $pattern      = "/<h([1-6])>/";
 
@@ -182,23 +355,43 @@ class ItapPageSeo
             $last_heading = $heading;
         }
         if ( ! $valid ) {
-            $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>Texte dessous catégorie de produits</i>' doit contenir des titres (h1,h2,h3...) dans l'ordre, certaines balises ne respectent pas cette hiérarchie" );
+            $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>$metafield</i>' doit contenir des titres (h1,h2,h3...) dans l'ordre, certaines balises ne respectent pas cette hiérarchie" , $taxonomy );
         }
         return $errors;
     }
 
-    public function itap_get_errors_from_below_cat_content( $content , $belowContent ) {
+    /**
+     * IN
+     * @param $content string that contains the content of the meta field
+     * @param $belowContent array that contains the error to display
+     * @return array
+     */
+    public function itap_get_errors_from_below_cat_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
         $errors = array();
+        if ( $taxonomy == "product_cat" ) {
+            $metafield = "Texte dessous catégorie de produits";
+        } elseif ( $taxonomy == "product_tag" ) {
+            $metafield = "below_tag_content";
+        } else {
+            $metafield = "below_attr_content";
+        }
         preg_match_all( '/<a href="(.*?)">(.*?)<\/a>/' , $content , $matches );
 
         if ( empty( $content ) && count( $matches[1] ) == 0 ) {
-            $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui n'as pas de contenu et de liens dans le meta-field <i>Texte dessous catégorie de produits</i>" );
+            $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui n'as pas de contenu et de liens dans le meta-field <i>$metafield</i>" , $taxonomy );
         }
         if ( ! empty( $content ) && count( $matches[1] ) == 0 ) {
-            $errors[] = $this->itap_seo_display_data( $belowContent , 'Catégorie qui ne contient pas de liens dans le meta-field "<i>Texte dessous catégorie de produits</i>"' );
+            $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui ne contient pas de liens dans le meta-field '<i>$metafield</i>'" , $taxonomy );
         }
         if ( str_word_count( $content ) < 800 ) {
-            $errors[] = $this->itap_seo_display_data( $belowContent , 'Catégorie qui contient moins de 800 mots dans le meta-field "<i>Texte dessous catégorie de produits</i>"' );
+            $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui contient moins de 800 mots dans le meta-field '<i>$metafield</i>'" , $taxonomy );
+        }
+
+        if ( $taxonomy !== "product_cat" ) {
+            return $errors;
         }
 
         if ( ! empty( $content ) && count( $matches[1] ) > 0 ) {
@@ -215,7 +408,7 @@ class ItapPageSeo
                 $sameSite               = parse_url( $match , PHP_URL_HOST ) == parse_url( site_url() , PHP_URL_HOST );
 
                 if ( ! $sameSite ) {
-                    $errors[] = $this->itap_seo_display_data( $belowContent , 'Lien externe dans le meta-field "<i>Texte dessous catégorie de produits</i>"' );
+                    $errors[] = $this->itap_seo_display_data( $belowContent , 'Lien externe dans le meta-field "<i>Texte dessous catégorie de produits</i>"' , $taxonomy );
                 }
 
                 if ( $sameSite ) {
@@ -269,6 +462,7 @@ class ItapPageSeo
 
 
     /**
+     * IN
      * @param $content string that contains the content of the meta field
      * @param $belowContent array that contains the error to display
      * @return void|array
@@ -280,7 +474,7 @@ class ItapPageSeo
             if ( str_contains( $match , 'mailto' ) ) {
                 $after_mailto = substr( $match , 7 );
                 if ( $after_mailto != $matches['content'][ $key ] ) {
-                    return $this->itap_seo_display_data( $belowContent , "Lien mailto avec un contenu différent de l'adresse mail" );
+                    return $this->itap_seo_display_data( $belowContent , "Lien mailto avec un contenu différent de l'adresse mail" , $taxonomy );
                 }
             }
         }
@@ -289,26 +483,7 @@ class ItapPageSeo
 
 
     /**
-     * TODO : change this function
-     */
-    public function itap_no_category_with_same_name() {
-        $errors     = array();
-        $terms      = get_terms( 'product_cat' , array('hide_empty' => false) );
-        $terms_name = array();
-        foreach ( $terms as $term ) {
-            $terms_name[] = $term->name;
-        }
-        $terms_name = array_count_values( $terms_name );
-        foreach ( $terms_name as $name => $count ) {
-            if ( $count > 1 ) {
-                $error    = $this->itap_seo_display_data( $term , sprintf( "Il y a %s catégories qui ont le même nom : %s" , $count , $name ) );
-                $errors[] = $error;
-            }
-        }
-        return $errors;
-    }
-
-    /**
+     * IN
      * Error if category or attribute slug contains numbers
      */
     public function itap_no_category_or_attribute_with_numbers_in_slug() : array {
@@ -414,7 +589,7 @@ class ItapPageSeo
                 <td><a target="_blank"
                        href="<?php echo esc_url( site_url() . '/wp-admin/edit.php?page=product_attributes&edit=' . $category['term_id'] . '&post_type=product' ) ?>">click</a>
                 </td>
-            <?php elseif ( $category['taxonomie'] == "menu" ) : ?>
+            <?php elseif ( $category['taxonomie'] === "menu" ) : ?>
                 <td><a target="_blank"
                        href="<?php echo esc_url( site_url() . '/wp-admin/nav-menus.php' ) ?>">click</a>
                 </td>
@@ -431,61 +606,29 @@ class ItapPageSeo
 
 
     /**
+     * IN
      * Error if category meta title has the word "archive" in it
      */
-//    public function itap_get_errors_from_meta_title() : array {
-//        $errors     = array();
-//        $args       = array(
-//            'taxonomy'   => 'product_cat' ,
-//            'hide_empty' => false ,
-//        );
-//        $categories = get_terms( $args );
-//        $urls       = array();
-//        foreach ( $categories as $category ) {
-//            $urls[ $category->term_id ] = get_term_link( $category->term_id , 'product_cat' );
-//        }
-//
-//        $mh       = curl_multi_init();
-//        $channels = array();
-//        $titles   = array();
-//
-//        foreach ( $urls as $key => $url ) {
-//            $channels[ $key ] = curl_init();
-//            curl_setopt( $channels[ $key ] , CURLOPT_URL , $url );
-//            curl_setopt( $channels[ $key ] , CURLOPT_HEADER , 0 );
-//            curl_setopt( $channels[ $key ] , CURLOPT_RETURNTRANSFER , 1 );
-//            // curl_setopt($channels[$key], CURLOPT_NOBODY, true);
-//            curl_multi_add_handle( $mh , $channels[ $key ] );
-//        }
-//
-//        $running = null;
-//        do {
-//            curl_multi_exec( $mh , $running );
-//        } while ( $running );
-//
-//        $result = array();
-//        foreach ( $channels as $id => $c ) {
-//            $result[ $id ] = curl_multi_getcontent( $c );
-//            $doc           = new DOMDocument();
-//            libxml_use_internal_errors( true );
-//            @$doc->loadHTML( $result[ $id ] );
-//            libxml_use_internal_errors( false );
-//            $titles[ $id ] = $doc->getElementsByTagName( 'title' )->item( 0 )->nodeValue;
-//            curl_multi_remove_handle( $mh , $c );
-//        }
-//        curl_multi_close( $mh );
-//        foreach ( $titles as $id => $title ) {
-//            $category = get_term( $id , 'product_cat' );
-//            if ( preg_match( '/archive/i' , $title ) && $category->name != 'Uncategorized' ) {
-//                $error    = $this->itap_seo_display_data( json_decode( json_encode( $category ) , true ) , 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le' , 'product_cat' , 'red' );
-//                $errors[] = $error;
-//            }
-//        }
-//
-//        return $errors;
-//    }
+    public function itap_get_errors_from_meta_title() : array {
+        $errors     = array();
+        $args       = array(
+            'taxonomy'   => 'product_cat' ,
+            'hide_empty' => false ,
+        );
+        $categories = get_terms( $args );
+
+        foreach ( $categories as $category ) {
+            $seo_title = get_term_meta( $category->term_id , 'rank_math_title' , true );
+            if ( preg_match( '/archive/i' , $seo_title ) && $category->name != 'Uncategorized' ) {
+                $error    = $this->itap_seo_display_data( json_decode( json_encode( $category ) , true ) , 'Le mot Archive est présent dans le meta titre de la page de la catégorie, supprimer le' , 'product_cat' , 'red' );
+                $errors[] = $error;
+            }
+        }
+        return $errors;
+    }
 
     /**
+     * IN
      * Error if website don't have opengraph image
      */
     public function itap_get_rank_math_opengraph_thumbnail() : array {
@@ -506,7 +649,7 @@ class ItapPageSeo
             $ogImage[] = $meta->getAttribute( 'content' );
         }
         if ( $ogImage && ! $ogImage[0] ) {
-            $data     = array('term_id' => 0 , 'name' => bloginfo( 'name' ));
+            $data     = array('term_id' => 0 , 'name' => get_bloginfo()( 'name' ));
             $error    = $this->itap_seo_display_data( $data , "le site actuel ne contient pas d'image opengraph dans rank math section 'titre et meta'" , '' , 'red' );
             $errors[] = $error;
         }
