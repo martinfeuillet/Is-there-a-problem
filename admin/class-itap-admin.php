@@ -474,6 +474,9 @@ class ItapAdmin
         $errors             = array();
         $images_meta_fields = array();
         $itap_settings      = get_option( 'itap_settings' );
+        if ( ! $itap_settings ) {
+            return $errors;
+        }
         if ( $itap_settings['itap_img_1'] ) {
             $images_meta_fields[] = $itap_settings['itap_img_1_label'];
         }
