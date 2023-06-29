@@ -45,9 +45,6 @@ Partie SEO :
 
 = are there dependencies = yes, woocommmerce 
 
-yes, woocommmerce 
-
-
 == Screenshots ==
 
 1. /assets/screenshot-1.png
@@ -58,8 +55,15 @@ yes, woocommmerce
 * A change since the previous version.
 * Another change.
 
+= 1.6.5 =
+* Add archive for seo.
+* correct the bug for title order (miscategorization_of_title).
+
 == Upgrade Notice ==
 
 = 1.0 =
 Base plugin version.
+
+= 1.6.5 =
+Add archive for seo
 

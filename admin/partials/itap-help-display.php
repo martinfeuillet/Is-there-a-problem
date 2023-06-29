@@ -214,7 +214,8 @@
                         titres tous les 300 mots. Il faut donc ajouter des titres dans votre texte.
                         De plus il faut respecter la hiérarchie des titres. Le titre le plus important est le h1 (ou
                         Titre 1), ensuite le h2 (ou Titre 2), puis le h3 (ou Titre 3) etc... . Vous ne pouvez pas avoir
-                        de h3 avant un h2, ou de h4 avant un h3 etc... . Vous devez respecter cette hiérarchie lorsque
+                        de h3 juste après un h1, ou de h4 après un h2 etc... . Vous devez respecter cette hiérarchie
+                        lorsque
                         vous rédigez vos textes.
                     </p>
                     <p class="itap-error">- Lien mailto avec un contenu différent de l'adresse mail</p>
@@ -237,6 +238,12 @@
                     <p class="itap-answer">
                         Dans la catégorie, en dessous de la description, vous avez un champ "Rank Math". Cliquer sur
                         "modifier l'extrait" et ajouter une description de la catégorie.
+                    </p>
+                    <p class="itap-error">- Le slug de la categorie ne doit pas contenir de chiffre</p>
+                    <p class="itap-answer">
+                        Ici c'est une erreur pour éviter la nomenclature d'Alidropship dans l'url.Pour ce qui est des
+                        attributs de type (df696df198707592f832b1), archiver l'erreur. De même pour les slug de type
+                        "trottinette-à-2-roues", vous archivez.
                     </p>
                 </div>
             </li>

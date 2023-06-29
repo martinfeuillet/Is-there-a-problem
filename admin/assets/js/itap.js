@@ -5,6 +5,7 @@
         checkboxes.on("change", (val) => {
             // Get the value of the checkbox
             if (val.target.checked) {
+                let seo = $(val.target).data('archive') === 'seo';
                 $(val.target).closest("tr").fadeOut();
                 $.ajax({
                     type: "POST",
@@ -12,6 +13,7 @@
                     data: {
                         action: "get_checkbox_value",
                         uniqId: val.target.value,
+                        seo
                     },
                     success: () => {
                         console.log("success");

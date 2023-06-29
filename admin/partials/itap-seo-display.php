@@ -1,3 +1,9 @@
+<?php
+global $wpdb;
+$table_archive  = $wpdb->prefix . 'itap_seo_archive';
+$count_archives = $wpdb->get_var( "SELECT COUNT(*) FROM $table_archive" );
+?>
+
 <div class="wrap is-there-a-problem-container">
     <p>Problèmes liés au référencement naturel</p>
 
@@ -8,6 +14,7 @@
             <th>Nom</th>
             <th>Url</th>
             <th>Problème remonté</th>
+            <th>Archiver</th>
         </tr>
         </thead>
         <tbody class="tbody-plugin">

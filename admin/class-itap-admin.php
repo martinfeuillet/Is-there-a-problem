@@ -61,8 +61,13 @@ class ItapAdmin
      */
     public function itap_send_archive_to_db() {
         global $wpdb;
-        $uniqId     = $_POST['uniqId'];
-        $table_name = $wpdb->prefix . 'itap_archive';
+        $uniqId = $_POST['uniqId'];
+        $seo    = $_POST['seo'];
+        if ( $seo ) {
+            $table_name = $wpdb->prefix . 'itap_seo_archive';
+        } else {
+            $table_name = $wpdb->prefix . 'itap_archive';
+        }
         // create table if not exist
         $charset_collate = $wpdb->get_charset_collate();
 
@@ -101,16 +106,18 @@ class ItapAdmin
     public function itap_add_menu() : void {
         global $wpdb;
         $tablename                = $wpdb->prefix . 'itap_archive';
+        $tablename_seo            = $wpdb->prefix . 'itap_seo_archive';
         $count_archives           = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename" );
+        $count_archives_seo       = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename_seo" );
         $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) - $count_archives : 0;
-        $total_seo_errors         = get_option( 'count_seo_errors' ) ?? 0;
+        $total_seo_errors         = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) - $count_archives_seo : 0;
         $total_errors             = $total_integration_errors + $total_seo_errors;
 
         add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%d</span>" , $total_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
         add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%d</span>" , $total_integration_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
         add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%d</span>" , $total_seo_errors ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
-        add_submenu_page( 'is_there_a_problem' , 'Archives' , sprintf( "Archives <span class='awaiting-mod'>%d</span>" , $count_archives ) , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
+        add_submenu_page( 'is_there_a_problem' , 'Archives' , sprintf( "Archives <span class='awaiting-mod'>%d</span>" , ( $count_archives + $count_archives_seo ) ) , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
 //        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
         add_submenu_page( 'is_there_a_problem' , 'Reglages ' , 'Reglages' , 'publish_pages' , 'itap_reglages' , array($this , 'itap_page_settings') );
         add_submenu_page( 'is_there_a_problem' , 'Help' , 'Help' , 'publish_pages' , 'help' , array($this , 'itap_page_help') );
@@ -631,7 +638,7 @@ class ItapAdmin
                    href="<?php echo esc_url( $error['url_edit'] ); ?>">click</a></td>
             <td><?php echo wp_kses( $error['error'] , $allowed_html ); ?></td>
             <td><?php echo esc_html( $error['author_name'] ); ?></td>
-            <td><input type="checkbox" class="itap_checkbox archiver" name="archiver"
+            <td><input type="checkbox" class="itap_checkbox archiver" data-archive="integration" name="archiver"
                        value="<?php echo esc_attr( $error['uniqId'] ); ?>"></td>
         </tr>
         <?php

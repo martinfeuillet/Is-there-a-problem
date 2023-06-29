@@ -39,12 +39,14 @@ class ItapPageSeo
      * @param $color string color when displaying the error
      */
     public function itap_seo_display_data( array $result , string $problem , string $taxonomy = 'product_cat' , string $color = 'white' ) : array {
+        $problem_slugify = sanitize_title( $problem );
         return array(
             'term_id'   => $result['term_id'] ,
             'name'      => $result['name'] ,
             'error'     => $problem ,
             'taxonomie' => $taxonomy ,
-            'color'     => $color
+            'color'     => $color ,
+            'uniqId'    => $problem_slugify . $result['term_id']
         );
     }
 
@@ -343,7 +345,7 @@ class ItapPageSeo
             $metafield = "below_attr_content";
         }
         $last_heading = 0;
-        $pattern      = "/<h([1-6])>/";
+        $pattern      = "/<h([1-6])>(.*?)<\/h[1-6]>/";
 
         preg_match_all( $pattern , $content , $matches );
 
@@ -599,6 +601,8 @@ class ItapPageSeo
                 </td>
             <?php endif; ?>
             <td><?php echo wp_kses( ( $category['error'] ) , $allowed_html ) ?></td>
+            <td><input type="checkbox" class="itap_checkbox archiver" data-archive="seo" name="archiver"
+                       value="<?php echo esc_attr( $category['uniqId'] ); ?>"></td>
         </tr>
         <?php
         return ob_get_clean();
@@ -662,9 +666,13 @@ class ItapPageSeo
      * @return void
      */
     public function get_errors_from_seo( callable $fn_errors , callable $fn_display ) : void {
-        $errors = $fn_errors();
-        if ( is_array( $errors ) && count( $errors ) > 0 ) {
-            foreach ( $errors as $error ) {
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'itap_seo_archive';
+        $uniqIds    = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY uniqId " , ARRAY_A ) ?? array();
+        $uniqIds    = array_column( $uniqIds , 'uniqId' );
+        $errors     = $fn_errors();
+        foreach ( $errors as $error ) {
+            if ( ! in_array( $error['uniqId'] , $uniqIds ) ) {
                 echo $fn_display( $error );
             }
         }
