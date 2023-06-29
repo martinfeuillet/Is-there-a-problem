@@ -484,13 +484,13 @@ class ItapAdmin
         if ( ! $itap_settings ) {
             return $errors;
         }
-        if ( $itap_settings['itap_img_1'] ) {
+        if ( isset( $itap_settings['itap_img_1'] ) ) {
             $images_meta_fields[] = $itap_settings['itap_img_1_label'];
         }
-        if ( $itap_settings['itap_img_2'] ) {
+        if ( isset( $itap_settings['itap_img_2'] ) ) {
             $images_meta_fields[] = $itap_settings['itap_img_2_label'];
         }
-        if ( $itap_settings['itap_img_3'] ) {
+        if ( isset( $itap_settings['itap_img_3'] ) ) {
             $images_meta_fields[] = $itap_settings['itap_img_3_label'];
         }
         $images_meta_fields = array_filter( $images_meta_fields );
