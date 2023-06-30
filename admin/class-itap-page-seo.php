@@ -677,12 +677,13 @@ class ItapPageSeo
         $uniqIds    = array_column( $uniqIds , 'uniqId' );
         $errors     = $fn_errors();
         foreach ( $errors as $error ) {
-            if ( ! in_array( $error['uniqId'] , $uniqIds ) ) {
+            if ( ! in_array( $error['uniqId'] , $uniqIds ) && $this->lines <= 300 ) {
                 echo $fn_display( $error );
                 $this->lines++;
             }
         }
-        update_option( 'count_seo_errors' , $this->lines );
+        $count_lines = $this->lines == 300 ? "300+" : $this->lines;
+        update_option( 'count_seo_errors' , $count_lines );
     }
 
     /**

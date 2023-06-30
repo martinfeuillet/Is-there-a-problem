@@ -63,7 +63,7 @@ class ItapAdmin
         global $wpdb;
         $uniqId = $_POST['uniqId'];
         $seo    = $_POST['seo'];
-        if ( $seo ) {
+        if ( $seo == 'true' ) {
             $table_name = $wpdb->prefix . 'itap_seo_archive';
         } else {
             $table_name = $wpdb->prefix . 'itap_archive';
@@ -105,11 +105,7 @@ class ItapAdmin
      */
     public function itap_add_menu() : void {
         global $wpdb;
-        $tablename                = $wpdb->prefix . 'itap_archive';
-        $tablename_seo            = $wpdb->prefix . 'itap_seo_archive';
-        $count_archives           = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename" );
-        $count_archives_seo       = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename_seo" );
-        $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) - $count_archives : 0;
+        $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) : 0;
         $total_seo_errors         = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
         $total_errors             = $total_integration_errors + $total_seo_errors;
 
@@ -604,13 +600,14 @@ class ItapAdmin
         $errors     = $this->$fn( $results );
         if ( count( $errors ) > 0 ) {
             foreach ( $errors as $error ) {
-                if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) ) {
+                if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) && $this->lines <= 300 ) {
                     echo $this->itap_display_tab( $error );
                     $this->lines++;
                 }
             }
         }
-        update_option( 'total_integration_errors' , count( $errors ) );
+        $count_lines = $this->lines == 300 ? "300+" : $this->lines;
+        update_option( 'total_integration_errors' , $count_lines );
     }
 
 

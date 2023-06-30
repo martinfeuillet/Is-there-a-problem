@@ -5,7 +5,7 @@
         checkboxes.on("change", (val) => {
             // Get the value of the checkbox
             if (val.target.checked) {
-                let seo = $(val.target).data('archive') === 'seo';
+                let seo = $(val.target).data('archive') === 'seo' ? "true" : "false";
                 $(val.target).closest("tr").fadeOut();
                 $.ajax({
                     type: "POST",
