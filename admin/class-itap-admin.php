@@ -110,14 +110,14 @@ class ItapAdmin
         $count_archives           = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename" );
         $count_archives_seo       = $wpdb->get_var( "SELECT COUNT(*) FROM $tablename_seo" );
         $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) - $count_archives : 0;
-        $total_seo_errors         = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) - $count_archives_seo : 0;
+        $total_seo_errors         = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
         $total_errors             = $total_integration_errors + $total_seo_errors;
 
         add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%d</span>" , $total_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
         add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%d</span>" , $total_integration_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
         add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%d</span>" , $total_seo_errors ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
-        add_submenu_page( 'is_there_a_problem' , 'Archives' , sprintf( "Archives <span class='awaiting-mod'>%d</span>" , ( $count_archives + $count_archives_seo ) ) , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
+        add_submenu_page( 'is_there_a_problem' , 'Archives' , "Archives" , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
 //        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
         add_submenu_page( 'is_there_a_problem' , 'Reglages ' , 'Reglages' , 'publish_pages' , 'itap_reglages' , array($this , 'itap_page_settings') );
         add_submenu_page( 'is_there_a_problem' , 'Help' , 'Help' , 'publish_pages' , 'help' , array($this , 'itap_page_help') );
@@ -257,8 +257,6 @@ class ItapAdmin
                 }
             }
         }
-        update_option( 'total_integration_errors' , count( $errors ) );
-
         return $errors;
     }
 
@@ -410,13 +408,13 @@ class ItapAdmin
             }
 
             $default_attributes = $product->get_default_attributes();
-            foreach ( $default_attributes as $key => $value ) {
-                $product_attributes = wc_get_product_terms( $result['id'] , $key , array('fields' => 'slugs') );
-                if ( $value !== $product_attributes[0] ) {
-                    $errors[] = $this->itap_display_data( $result , "Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class='tooltip'>catégories<span class='tooltiptext'>Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l'onglet attribut de produit</span></div>. " , '1006' );
-
-                }
-            }
+//            foreach ( $default_attributes as $key => $value ) {
+//                $product_attributes = wc_get_product_terms( $result['id'] , $key , array('fields' => 'slugs') );
+//                if ( $value !== $product_attributes[0] ) {
+//                    $errors[] = $this->itap_display_data( $result , "Produit variable dont le produit par défaut à comme variation des valeurs qui ne sont pas les premieres de leurs <div class='tooltip'>catégories<span class='tooltiptext'>Erreur qui signale également les attributs remplis à la volée directement sur la page du produit, merci de rentrer tous les attributs et leurs termes dans l'onglet attribut de produit</span></div>. " , '1006' );
+//
+//                }
+//            }
 
             if ( count( $product->get_children() ) == 0 ) {
                 $errors[] = $this->itap_display_data( $result , "Produit variable qui n'a pas de variations, ajoutez en ou passez le en produit simple" , '1007' );
@@ -612,6 +610,7 @@ class ItapAdmin
                 }
             }
         }
+        update_option( 'total_integration_errors' , count( $errors ) );
     }
 
 

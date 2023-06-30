@@ -2,6 +2,8 @@
 
 class ItapPageSeo
 {
+    public int $lines = 0;
+
     public function __construct() {
         $this->itap_partials_seo();
     }
@@ -12,7 +14,6 @@ class ItapPageSeo
     public function itap_partials_seo() : void {
         if ( isset( $_GET['page'] ) && $_GET['page'] == 'is_there_a_problem_seo' ) {
             $total_problems = count( $this->itap_get_rank_math_opengraph_thumbnail() ) + count( $this->itap_get_errors_from_meta_title() ) + count( $this->itap_no_category_or_attribute_with_numbers_in_slug() ) + count( $this->itap_get_errors_nofollow_link() ) + count( $this->itap_get_errors_from_product_cat() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_from_product_attr() ) + count( $this->itap_get_errors_from_product_tag() );
-            update_option( 'count_seo_errors' , $total_problems );
             require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/itap-seo-display.php';
         }
     }
@@ -350,6 +351,10 @@ class ItapPageSeo
         preg_match_all( $pattern , $content , $matches );
 
         foreach ( $matches[1] as $heading ) {
+            if ( $last_heading == 0 ) {
+                $last_heading = $heading;
+                continue;
+            }
             if ( $heading > $last_heading + 1 ) {
                 $valid = false;
                 break;
@@ -674,8 +679,10 @@ class ItapPageSeo
         foreach ( $errors as $error ) {
             if ( ! in_array( $error['uniqId'] , $uniqIds ) ) {
                 echo $fn_display( $error );
+                $this->lines++;
             }
         }
+        update_option( 'count_seo_errors' , $this->lines );
     }
 
     /**
