@@ -105,13 +105,16 @@ class ItapAdmin
      */
     public function itap_add_menu() : void {
         global $wpdb;
-        $total_integration_errors = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) : 0;
-        $total_seo_errors         = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
-        $total_errors             = $total_integration_errors + $total_seo_errors;
+        $total_integration_errors        = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) : 0;
+        $total_seo_errors                = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
+        $total_errors                    = $total_integration_errors + $total_seo_errors;
+        $total_integration_errors_string = $total_integration_errors == 300 ? '300+' : $total_integration_errors;
+        $total_seo_errors_string         = $total_seo_errors == 300 ? '300+' : $total_seo_errors;
+        $total_errors_string             = $total_errors == 600 ? '600+' : $total_errors;
 
-        add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%d</span>" , $total_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
-        add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%d</span>" , $total_integration_errors ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
-        add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%d</span>" , $total_seo_errors ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
+        add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%s</span>" , $total_errors_string ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
+        add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%s</span>" , $total_integration_errors_string ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
+        add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%s</span>" , $total_seo_errors_string ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
         add_submenu_page( 'is_there_a_problem' , 'Archives' , "Archives" , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
 //        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
