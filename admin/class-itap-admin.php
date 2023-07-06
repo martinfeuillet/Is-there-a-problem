@@ -326,6 +326,14 @@ class ItapAdmin
         } elseif ( strlen( $result['alt'] ) < 10 ) {
             $errors[] = $this->itap_display_data( $result , 'Balise alt trop courte' , '1002' );
         }
+        $image_format = array('.jpg' , '.jpeg' , '.png' , '.gif' , '.webp' , '.svg');
+        // if you find one of those formats in the $result['alt'], display an error
+        foreach ( $image_format as $format ) {
+            if ( str_contains( $result['alt'] , $format ) ) {
+                $errors[] = $this->itap_display_data( $result , "Balise alt qui contient un format d'image (jpg , jpeg , gif, png , webp , svg), remplacer le par une vraie description de l'image" , '1026' );
+                break;
+            }
+        }
         return $errors;
     }
 
@@ -385,6 +393,7 @@ class ItapAdmin
             }
 
             $couleurs = array('argente' , 'beige' , 'blanc' , 'bleu' , 'bleu-fonce' , 'bordeaux' , 'gris' , 'jaune' , 'bronze' , 'marron' , 'multicolore' , 'noir' , 'dore' , 'orange' , 'rose' , 'rose-fonce' , 'rouge' , 'turquoise' , 'vert' , 'violet');
+            $couleurs = array_merge( $couleurs , $this->get_colors_from_settings() );
             foreach ( $attribute_variation as $attribute ) {
                 $product_tag = wc_get_attribute( $attribute['id'] );
                 $tag_name    = $product_tag->name;
@@ -552,7 +561,7 @@ class ItapAdmin
                 $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres' , $total_words_min_page ) , '1016' );
             }
 
-            if ( str_word_count( $product->get_short_description() ) > $total_words_min_short_desc ) {
+            if ( str_word_count( strip_tags( $product->get_short_description() ) ) > $total_words_min_short_desc ) {
                 $errors[] = $this->itap_display_data( $result , 'La description courte du produit doit être inférieure à ' . $total_words_min_short_desc . ' mots, enlevez du contenu' , '1025' );
             }
 
@@ -606,8 +615,7 @@ class ItapAdmin
                 }
             }
         }
-        $count_lines = $this->lines == 300 ? "300+" : $this->lines;
-        update_option( 'total_integration_errors' , $count_lines );
+        update_option( 'total_integration_errors' , $this->lines );
     }
 
 
@@ -685,5 +693,14 @@ class ItapAdmin
         }
         // Return result
         return $text;
+    }
+
+    public function get_colors_from_settings() {
+        $colors = get_option( 'itap_settings' )['colors'];
+        if ( empty( $colors ) ) {
+            return array();
+        }
+        $colors = explode( '/' , $colors );
+        return array_map( 'trim' , $colors );
     }
 }

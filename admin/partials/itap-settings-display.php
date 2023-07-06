@@ -103,6 +103,12 @@ $itap_settings = get_option( 'itap_settings' );
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_short_desc'] ?? '50' ?>"
                                 id="total_words_min_short_desc"></div>
                 </div>
+                <div>
+                    <label for="total_words_min_short_desc">Couleurs supplémentaires à prendre en compte dans l'erreur
+                        des couleurs (Séparer chaque couleur par un /)</label>
+                    <div><input type="text" value="<?php echo $itap_settings['colors'] ?? '' ?>"
+                                id="itap_colors" placeholder="rouge / vert / bleu ..."></div>
+                </div>
                 <button id="itap_submit">Enregistrer les paramètres</button>
             </div>
         </div>

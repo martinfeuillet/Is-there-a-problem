@@ -146,6 +146,12 @@
                         d'écran, nous limitons désormais la description courte à 50 mots. Si vous avez plus de 50 mots,
                         enlevez en.
                     </p>
+                    <p class="itap-error">- Balise alt qui contient un format d'image (jpg , jpeg , png , webp ,
+                        svg), remplacer le par une vraie description de l'image</p>
+                    <p class="itap-answer">
+                        Nous avons remarqués que certaines balises alt correspondent à leur nom de fichier (ex :
+                        image22.jpg). Il faut remplacer ces balises alt par une vraie description de l'image.
+                    </p>
                 </div>
             </li>
             <li>

@@ -29,6 +29,7 @@ class ItapPageSettings
             'total_words_min_block'      => $_POST['total_words_min_block'] ,
             'total_words_min_by_cat'     => $_POST['total_words_min_by_cat'] ,
             'total_words_min_short_desc' => $_POST['total_words_min_short_desc'] ,
+            'colors'                     => $_POST['colors'] ,
         );
         update_option( 'itap_settings' , $itap_settings );
         echo json_encode( 'ok' );

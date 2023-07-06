@@ -19,7 +19,8 @@ $count_archives = $wpdb->get_var( "SELECT COUNT(*) FROM $table_archive" );
         </thead>
         <tbody class="tbody-plugin">
         <?php
-        $this->get_errors_from_seo( array($this , 'itap_get_rank_math_opengraph_thumbnail') , array($this , 'itap_seo_display_tab') );
+        // TODO: change this function
+        // $this->get_errors_from_seo( array($this , 'itap_get_rank_math_opengraph_thumbnail') , array($this , 'itap_seo_display_tab') );
         $this->get_errors_from_seo( array($this , 'itap_get_errors_from_meta_title') , array($this , 'itap_seo_display_tab') );
         $this->get_errors_from_seo( array($this , 'itap_no_category_or_attribute_with_numbers_in_slug') , array($this , 'itap_seo_display_tab') );
         $this->get_errors_from_seo( array($this , 'itap_get_errors_nofollow_link') , array($this , 'itap_seo_display_tab') );

@@ -59,6 +59,12 @@ Partie SEO :
 * Add archive for seo.
 * correct the bug for title order (miscategorization_of_title).
 
+= 1.7.0 =
+Fix bug for seo on below category text, below tag text and below attr text.
+fix min words for short description.
+
+
+
 == Upgrade Notice ==
 
 = 1.0 =

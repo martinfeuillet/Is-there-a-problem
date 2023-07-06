@@ -13,7 +13,6 @@ class ItapPageSeo
      */
     public function itap_partials_seo() : void {
         if ( isset( $_GET['page'] ) && $_GET['page'] == 'is_there_a_problem_seo' ) {
-            $total_problems = count( $this->itap_get_rank_math_opengraph_thumbnail() ) + count( $this->itap_get_errors_from_meta_title() ) + count( $this->itap_no_category_or_attribute_with_numbers_in_slug() ) + count( $this->itap_get_errors_nofollow_link() ) + count( $this->itap_get_errors_from_product_cat() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_no_tags_description() ) + count( $this->itap_get_errors_from_product_attr() ) + count( $this->itap_get_errors_from_product_tag() );
             require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/itap-seo-display.php';
         }
     }
@@ -162,7 +161,7 @@ class ItapPageSeo
                 'name'              => $tag->name ,
                 'slug'              => $tag->slug ,
                 'parent'            => $tag->parent ,
-                'below_tag_content' => get_term_meta( $tag->term_id , 'below_tag_content' , true ) ,
+                'below_tag_content' => html_entity_decode( get_term_meta( $tag->term_id , 'below_tag_content' , true ) ) ,
                 'noindex'           => $noindex ,
 
             );
@@ -224,12 +223,11 @@ class ItapPageSeo
                     'name'               => $term->name ,
                     'slug'               => $term->slug ,
                     'parent'             => $term->parent ,
-                    'below_attr_content' => get_term_meta( $term->term_id , 'below_attr_content' , true ) ,
+                    'below_attr_content' => html_entity_decode( get_term_meta( $term->term_id , 'below_attr_content' , true ) ) ,
                     'noindex'            => $noindex ,
 
                 );
             }
-
             foreach ( $belowAttrContents as $belowAttrContent ) {
                 if ( $belowAttrContent['name'] !== 'Uncategorized' && $belowAttrContent['noindex'] != '1' ) {
                     $content   = $belowAttrContent['below_attr_content'];
@@ -279,7 +277,7 @@ class ItapPageSeo
      * @param $belowContent array that contains the error to display
      */
     public function no_h2_in_below_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
-        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+        if ( empty( $content ) ) {
             return array();
         }
         if ( $taxonomy == "product_cat" ) {
@@ -316,7 +314,7 @@ class ItapPageSeo
         $count  = 0;
         $titles = array("<h1>" , "</h1>" , "<h2>" , "</h2>" , "<h3>" , "</h3>" , "<h4>" , "</h4>" , "<h5>" , "</h5>" , "<h6>" , "</h6>");
         foreach ( $words as $word ) {
-            $is_word_contain_title = preg_match( '/<h[1-6]>(.*?)<\/h[1-6]>/s' , $word );
+            $is_word_contain_title = preg_match( '/<h[1-6]>(.*?)<\/h[1-6]>/s' , $word ) === 1;
             if ( in_array( $word , $titles ) || $is_word_contain_title ) {
                 $count = 0;
             } else {
@@ -374,9 +372,6 @@ class ItapPageSeo
      * @return array
      */
     public function itap_get_errors_from_below_cat_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
-        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
-            return array();
-        }
         $errors = array();
         if ( $taxonomy == "product_cat" ) {
             $metafield = "Texte dessous catégorie de produits";
@@ -637,8 +632,7 @@ class ItapPageSeo
     }
 
     /**
-     * IN
-     * Error if website don't have opengraph image
+     * TODO: change this function, too long
      */
     public function itap_get_rank_math_opengraph_thumbnail() : array {
         $errors  = array();
@@ -682,8 +676,7 @@ class ItapPageSeo
                 $this->lines++;
             }
         }
-        $count_lines = $this->lines == 300 ? "300+" : $this->lines;
-        update_option( 'count_seo_errors' , $count_lines );
+        update_option( 'count_seo_errors' , $this->lines );
     }
 
     /**

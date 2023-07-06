@@ -204,6 +204,7 @@
                     total_words_min_block: $("#total_words_min_block").val(),
                     total_words_min_by_cat: $("#total_words_min_by_cat").val(),
                     total_words_min_short_desc: $("#total_words_min_short_desc").val(),
+                    colors: $("#itap_colors").val(),
                 },
                 success: () => {
                     alert("Vos paramètres ont bien été enregistrés");
