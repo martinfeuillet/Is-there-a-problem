@@ -277,7 +277,7 @@ class ItapPageSeo
      * @param $belowContent array that contains the error to display
      */
     public function no_h2_in_below_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
-        if ( empty( $content ) ) {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
             return array();
         }
         if ( $taxonomy == "product_cat" ) {
@@ -302,6 +302,9 @@ class ItapPageSeo
      * @param $belowContent array that contains the error to display
      */
     public function no_title_since_300_words( string $content , array $belowContent , $taxonomy = 'product_cat' ) : array {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
         $errors = array();
         if ( $taxonomy == "product_cat" ) {
             $metafield = "Texte dessous catégorie de produits";
@@ -334,6 +337,9 @@ class ItapPageSeo
      * @param $belowContent array that contains the error to display
      */
     public function miscategorization_of_title( string $content , array $belowContent , $taxonomy = 'product_cat' ) : array {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
         $valid  = true;
         $errors = array();
         if ( $taxonomy == "product_cat" ) {
@@ -372,6 +378,9 @@ class ItapPageSeo
      * @return array
      */
     public function itap_get_errors_from_below_cat_content( string $content , array $belowContent , $taxonomy = "product_cat" ) : array {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
         $errors = array();
         if ( $taxonomy == "product_cat" ) {
             $metafield = "Texte dessous catégorie de produits";
@@ -470,6 +479,9 @@ class ItapPageSeo
      * @return void|array
      */
     public function itap_error_if_mailto_href_dont_have_the_same_value_of_a_tag( string $content , array $belowContent , $taxonomy = 'product_cat' ) {
+        if ( $taxonomy !== "product_cat" && empty( $content ) ) {
+            return array();
+        }
         $errors = array();
         preg_match_all( '/<a[^>]+href=([\'"])(?<href>.+?)\1[^>]*>(?<content>.+?)<\/a>/i' , $content , $matches );
         foreach ( $matches['href'] as $key => $match ) {

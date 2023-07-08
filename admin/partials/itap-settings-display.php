@@ -6,11 +6,6 @@ $itap_settings = get_option( 'itap_settings' );
     <div class="itap-settings">
         <h3>Champs pris en compte dans le compte des mots par produit</h3>
         <div>
-            <input type="checkbox" name="short_desc"
-                   id="short_desc" <?php echo $itap_settings['short_desc'] ? 'checked' : '' ?>>
-            <label for="short_desc">short description</label>
-        </div>
-        <div>
             <input type="checkbox" name="desc1" id="desc1" <?php echo $itap_settings['desc1'] ? 'checked' : '' ?>>
             <label for="desc1">Description 1</label>
         </div>

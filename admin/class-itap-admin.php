@@ -531,7 +531,6 @@ class ItapAdmin
         $total_words_min_short_desc = $settings['total_words_min_short_desc'] ?? 50;
         if ( $settings ) {
             $possible_desc = array(
-                $settings['short_desc'] ? $product->get_short_description() : null ,
                 $settings['desc1'] ? $product->get_meta( 'description-1' ) : null ,
                 $settings['desc2'] ? $product->get_meta( 'description-2' ) : null ,
                 $settings['desc3'] ? $product->get_meta( 'description-3' ) : null ,
@@ -560,8 +559,11 @@ class ItapAdmin
                 $total_count += $total_words;
             }
 
+            // add the short description
+            $total_count += str_word_count( strip_tags( $product->get_short_description() ) );
+
             if ( $total_count < $total_words_min_page ) {
-                $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres' , $total_words_min_page ) , '1016' );
+                $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres + description courte' , $total_words_min_page ) , '1016' );
             }
 
             if ( str_word_count( strip_tags( $product->get_short_description() ) ) > $total_words_min_short_desc ) {

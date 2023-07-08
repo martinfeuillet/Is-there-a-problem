@@ -60,8 +60,12 @@ Partie SEO :
 * correct the bug for title order (miscategorization_of_title).
 
 = 1.7.0 =
-Fix bug for seo on below category text, below tag text and below attr text.
-fix min words for short description.
+* Fix bug for seo on below category text, below tag text and below attr text.
+* fix min words for short description.
+
+= 1.7.2 =
+* Don't check the short description on error : chaque champ doit avoir minimum 50 mots
+* check below attr content and below tag content only if there are content on it. (part SEO)
 
 
 
