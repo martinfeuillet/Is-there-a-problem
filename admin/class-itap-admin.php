@@ -352,6 +352,9 @@ class ItapAdmin
             $variations = $product->get_children();
             foreach ( $variations as $variation ) {
                 $product = wc_get_product( $variation );
+                if ( ! $product ) {
+                    continue;
+                }
                 if ( $product->get_regular_price() == '' ) {
                     $errors[] = $this->itap_display_data( $result , "Produit variable dont une des variations ne contient pas de prix " , '1020' );
                     break;
