@@ -568,8 +568,9 @@ class ItapAdmin
             if ( $total_count < $total_words_min_page ) {
                 $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres + description courte' , $total_words_min_page ) , '1016' );
             }
-
-            if ( str_word_count( strip_tags( $product->get_short_description() ) ) > $total_words_min_short_desc ) {
+            $product_short_desc = strip_tags( $product->get_short_description() );
+            $product_short_desc = str_replace( array("\n" , "\r") , '' , $product_short_desc );
+            if ( str_word_count( $product_short_desc ) > $total_words_min_short_desc ) {
                 $errors[] = $this->itap_display_data( $result , 'La description courte du produit doit être inférieure à ' . $total_words_min_short_desc . ' mots, enlevez du contenu' , '1025' );
             }
 

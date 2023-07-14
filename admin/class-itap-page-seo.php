@@ -313,9 +313,16 @@ class ItapPageSeo
         } else {
             $metafield = "below_attr_content";
         }
-        $words  = explode( ' ' , $content );
-        $count  = 0;
-        $titles = array("<h1>" , "</h1>" , "<h2>" , "</h2>" , "<h3>" , "</h3>" , "<h4>" , "</h4>" , "<h5>" , "</h5>" , "<h6>" , "</h6>");
+
+        // Remove all HTML tags except heading tags (h1-h6)
+        $content = strip_tags( $content , '<h1><h2><h3><h4><h5><h6>' );
+        $content = str_replace( array("\n" , "\r") , '' , $content );
+        $words   = preg_split( '/(<\/?h[1-6]>|\s+)/' , $content , -1 , PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE );
+        $words   = array_filter( $words , function ( $word ) {
+            return trim( $word ) !== '';
+        } );
+        $count   = 0;
+        $titles  = array("<h1>" , "</h1>" , "<h2>" , "</h2>" , "<h3>" , "</h3>" , "<h4>" , "</h4>" , "<h5>" , "</h5>" , "<h6>" , "</h6>");
         foreach ( $words as $word ) {
             $is_word_contain_title = preg_match( '/<h[1-6]>(.*?)<\/h[1-6]>/s' , $word ) === 1;
             if ( in_array( $word , $titles ) || $is_word_contain_title ) {
@@ -324,7 +331,7 @@ class ItapPageSeo
                 $count++;
             }
             if ( $count == 300 ) {
-                $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>$metafield</i>' doit contenir des titres tous les 300 mots, celle ci n'en contient pas" , $taxonomy );
+                $errors[] = $this->itap_seo_display_data( $belowContent , "le meta-field '<i>$metafield</i>' doit contenir des titres tous les 300 mots, celle-ci n'en contient pas" , $taxonomy );
             }
         }
         return $errors;

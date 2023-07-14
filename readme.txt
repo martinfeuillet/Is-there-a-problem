@@ -67,7 +67,10 @@ Partie SEO :
 * Don't check the short description on error : chaque champ doit avoir minimum 50 mots
 * check below attr content and below tag content only if there are content on it. (part SEO)
 
-
+= 1.7.4 =
+* fix mistakes on :
+1. min words on short description
+1. 300 hundred words between title
 
 == Upgrade Notice ==
 
