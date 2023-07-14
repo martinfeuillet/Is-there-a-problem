@@ -1,5 +1,7 @@
 <?php
 
+require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-function.php';
+
 class ItapPageSeo
 {
     public int $lines = 0;
@@ -404,7 +406,7 @@ class ItapPageSeo
         if ( ! empty( $content ) && count( $matches[1] ) == 0 ) {
             $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui ne contient pas de liens dans le meta-field '<i>$metafield</i>'" , $taxonomy );
         }
-        if ( str_word_count( $content ) < 800 ) {
+        if ( Itap_Helper_Function::utf8_word_count( strip_tags( $content ) ) < 800 ) {
             $errors[] = $this->itap_seo_display_data( $belowContent , "Catégorie qui contient moins de 800 mots dans le meta-field '<i>$metafield</i>'" , $taxonomy );
         }
 

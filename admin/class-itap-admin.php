@@ -5,6 +5,7 @@ use JetBrains\PhpStorm\NoReturn;
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-seo-quantum.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-settings.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-automation.php';
+require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-function.php';
 
 class ItapAdmin
 {
@@ -554,7 +555,7 @@ class ItapAdmin
             $error_check           = false;
 
             foreach ( $possible_desc as $field ) {
-                $total_words = str_word_count( strip_tags( $field ) );
+                $total_words = Itap_Helper_Function::utf8_word_count( strip_tags( $field ) );
                 if ( $total_words < $total_words_min_block && ! $error_check ) {
                     $errors[]    = $this->itap_display_data( $result , sprintf( "Chaque champ d'une page produit dont le nom est coché dans les paramètres du plugin doit avoir plus de %s mots, rajoutez en plus" , $total_words_min_block ) , '1015' );
                     $error_check = true;
@@ -563,21 +564,21 @@ class ItapAdmin
             }
 
             // add the short description
-            $total_count += str_word_count( strip_tags( $product->get_short_description() ) );
+            $total_count += Itap_Helper_Function::utf8_word_count( strip_tags( $product->get_short_description() ) );
 
             if ( $total_count < $total_words_min_page ) {
                 $errors[] = $this->itap_display_data( $result , sprintf( 'La page du produit contient moins de %s mots, le compte est calculé grâce à la somme de tous les champs cochés dans les paramètres + description courte' , $total_words_min_page ) , '1016' );
             }
             $product_short_desc = strip_tags( $product->get_short_description() );
             $product_short_desc = str_replace( array("\n" , "\r") , '' , $product_short_desc );
-            if ( str_word_count( $product_short_desc ) > $total_words_min_short_desc ) {
+            if ( Itap_Helper_Function::utf8_word_count( $product_short_desc ) > $total_words_min_short_desc ) {
                 $errors[] = $this->itap_display_data( $result , 'La description courte du produit doit être inférieure à ' . $total_words_min_short_desc . ' mots, enlevez du contenu' , '1025' );
             }
 
         } else {
             $description1 = $product->get_meta( 'description-1' ) ?? null;
             $description2 = $product->get_meta( 'description-2' ) ?? null;
-            if ( str_word_count( $description1 ) + str_word_count( $description2 ) + str_word_count( $product->get_short_description() ) < 200 ) {
+            if ( Itap_Helper_Function::utf8_word_count( $description1 ) + Itap_Helper_Function::utf8_word_count( $description2 ) + Itap_Helper_Function::utf8_word_count( $product->get_short_description() ) < 200 ) {
                 $errors[] = $this->itap_display_data( $result , 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu' , '1013' );
             }
         }
@@ -713,3 +714,4 @@ class ItapAdmin
         return array_map( 'trim' , $colors );
     }
 }
+
