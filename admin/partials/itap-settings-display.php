@@ -92,17 +92,29 @@ $itap_settings = get_option( 'itap_settings' );
                                 id="total_words_min_by_cat"></div>
                 </div>
                 <div>
-                    <label for="total_words_min_short_desc">Total des mots maximum pour la short description de produit
-                        (50 par
-                        défaut)</label>
+                    <label for="total_words_min_short_desc">
+                        Total des mots maximum pour la short description de produit (50 par défaut)
+                    </label>
                     <div><input type="text" value="<?php echo $itap_settings['total_words_min_short_desc'] ?? '50' ?>"
                                 id="total_words_min_short_desc"></div>
                 </div>
                 <div>
+                    <label for="total_words_min_short_desc">
+                        Total des mots maximum pour la description principal (sous le titre) de produit (60 par défaut)
+                    </label>
+                    <div>
+                        <input type="text"
+                               value="<?php echo $itap_settings['total_words_min_principal_desc'] ?? '60' ?>"
+                               id="total_words_min_principal_desc">
+                    </div>
+                </div>
+                <div>
                     <label for="total_words_min_short_desc">Couleurs supplémentaires à prendre en compte dans l'erreur
                         des couleurs (Séparer chaque couleur par un /)</label>
-                    <div><input type="text" value="<?php echo $itap_settings['colors'] ?? '' ?>"
-                                id="itap_colors" placeholder="rouge / vert / bleu ..."></div>
+                    <div>
+                        <input type="text" value="<?php echo $itap_settings['colors'] ?? '' ?>"
+                               id="itap_colors" placeholder="rouge / vert / bleu ...">
+                    </div>
                 </div>
                 <button id="itap_submit">Enregistrer les paramètres</button>
             </div>

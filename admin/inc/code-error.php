@@ -31,5 +31,8 @@ $codeErrorFile = array(
     '1023' => "Produit qui contient un lien mailto dont la valeur du href n'est pas égale à la valeur de la balise lien" ,
     '1024' => "Produit ou le/les meta(s) field(s) image-description-1, 2 ou 3 est/sont vide, il doit être rempli" ,
     '1025' => "La description courte du produit doit être inférieure à 50 mots, enlevez du contenu" ,
-    '1026' => "Balise alt qui contient un format d'image (jpg , jpeg , gif, png , webp , svg), remplacer la par une vraie description de l'image"
+    '1026' => "Balise alt qui contient un format d'image (jpg , jpeg , gif, png , webp , svg), remplacer la par une vraie description de l'image" ,
+    '1027' => "La description principale du produit doit être inférieure à 60 mots, enlevez du contenu" ,
+    '1028' => "Le champ X contient un contenu généré entièrement par l'IA, réécrivez le" ,
+
 );

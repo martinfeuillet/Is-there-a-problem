@@ -72,6 +72,11 @@ Partie SEO :
 1. min words on short description
 1. 300 hundred words between title
 
+= 1.7.8 =
+* add two more mistakes on :
+1. min words on main description
+1. search fields that contains too much content from IA
+
 == Upgrade Notice ==
 
 = 1.0 =

@@ -251,6 +251,11 @@
                         attributs de type (df696df198707592f832b1), archiver l'erreur. De même pour les slug de type
                         "trottinette-à-2-roues", vous archivez.
                     </p>
+                    <p class="itap-error">- Le champ X contient un contenu généré entièrement par l'IA, réécrivez le</p>
+                    <p class="itap-answer">
+                        Avec l'apparition de l'IA, trop de contenu sont générés automatiquement. Google ne va pas tarder
+                        à sanctionner les sites qui utilisent ce genre de contenu. Il faut donc réécrire le contenu.
+                    </p>
                 </div>
             </li>
         </ul>
