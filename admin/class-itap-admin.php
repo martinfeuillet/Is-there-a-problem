@@ -609,11 +609,6 @@ class ItapAdmin
             $errors[] = $this->itap_display_data( $result , 'La description principale du produit (sous le titre) doit être inférieure à ' . $total_words_min_principal_desc . ' mots, enlevez du contenu' , '1027' );
         }
 
-        $description1 = $product->get_meta( 'description-1' ) ?? null;
-        $description2 = $product->get_meta( 'description-2' ) ?? null;
-        if ( Itap_Helper_Function::utf8_word_count( $description1 ) + Itap_Helper_Function::utf8_word_count( $description2 ) + Itap_Helper_Function::utf8_word_count( $product->get_short_description() ) < 200 ) {
-            $errors[] = $this->itap_display_data( $result , 'Description-1 + description-2 + description courte du produit inférieures à 200 mots, mettez plus de contenu' , '1013' );
-        }
         return $errors;
     }
 
