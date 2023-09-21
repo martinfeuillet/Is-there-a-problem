@@ -10,6 +10,7 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-f
 class ItapAdmin
 {
     public int      $lines        = 0;
+    public int      $nb_errors    = 0;
     protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation' , 'help');
     private string  $plugin_name;
     private string  $version;
@@ -646,9 +647,12 @@ class ItapAdmin
         $errors     = $this->$fn( $results );
         if ( count( $errors ) > 0 ) {
             foreach ( $errors as $error ) {
-                if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) && $this->lines <= 300 ) {
-                    echo $this->itap_display_tab( $error );
-                    $this->lines++;
+                if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) ) {
+                    $this->nb_errors++;
+                    if ( $this->lines <= 300 ) {
+                        echo $this->itap_display_tab( $error );
+                        $this->lines++;
+                    }
                 }
             }
         }

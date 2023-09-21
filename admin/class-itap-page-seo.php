@@ -4,7 +4,9 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-f
 
 class ItapPageSeo
 {
-    public int $lines = 0;
+    public int $lines     = 0;
+    public int $nb_errors = 0;
+
 
     public function __construct() {
         $this->itap_partials_seo();
@@ -692,9 +694,12 @@ class ItapPageSeo
         $uniqIds    = array_column( $uniqIds , 'uniqId' );
         $errors     = $fn_errors();
         foreach ( $errors as $error ) {
-            if ( ! in_array( $error['uniqId'] , $uniqIds ) && $this->lines <= 300 ) {
-                echo $fn_display( $error );
-                $this->lines++;
+            if ( ! in_array( $error['uniqId'] , $uniqIds ) ) {
+                $this->nb_errors++;
+                if ( $this->lines <= 300 ) {
+                    echo $fn_display( $error );
+                    $this->lines++;
+                }
             }
         }
         update_option( 'count_seo_errors' , $this->lines );

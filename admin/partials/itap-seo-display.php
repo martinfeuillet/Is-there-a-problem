@@ -31,4 +31,5 @@ $count_archives = $wpdb->get_var( "SELECT COUNT(*) FROM $table_archive" );
         ?>
         </tbody>
     </table>
+    <p>Nombre d'erreurs : <?php echo $this->nb_errors; ?></p>
 </div>

@@ -53,4 +53,5 @@ if ( ! empty( $_GET['author_name'] ) ) {
         ?>
         </tbody>
     </table>
+    <p>Nombre d'erreurs : <?php echo $this->nb_errors; ?></p>
 </div>
