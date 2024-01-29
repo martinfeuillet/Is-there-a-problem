@@ -7,8 +7,7 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-set
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-automation.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-function.php';
 
-class ItapAdmin
-{
+class ItapAdmin {
     public int      $lines        = 0;
     public int      $nb_errors    = 0;
     protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation' , 'help');
@@ -119,7 +118,6 @@ class ItapAdmin
         add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%s</span>" , $total_seo_errors_string ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
         add_submenu_page( 'is_there_a_problem' , 'Archives' , "Archives" , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
-//        add_submenu_page( 'is_there_a_problem' , 'Seo-Quantum ' , 'Seo-Quantum' , 'publish_pages' , 'seo_quantum' , array($this , 'itap_page_seoquantum') );
         add_submenu_page( 'is_there_a_problem' , 'Reglages ' , 'Reglages' , 'publish_pages' , 'itap_reglages' , array($this , 'itap_page_settings') );
         add_submenu_page( 'is_there_a_problem' , 'Help' , 'Help' , 'publish_pages' , 'help' , array($this , 'itap_page_help') );
 
@@ -424,7 +422,17 @@ class ItapAdmin
             return array();
         }
         if ( $product->is_type( 'variable' ) ) {
-            if ( ! $product->get_default_attributes() ) {
+            $has_all_defaults = true;
+            $attributes       = $product->get_variation_attributes();
+
+            foreach ( $attributes as $attribute => $values ) {
+                if ( ! array_key_exists( $attribute , $product->get_default_attributes() ) ) {
+                    $has_all_defaults = false;
+                    break;
+                }
+            }
+
+            if ( ! $has_all_defaults ) {
                 $errors[] = $this->itap_display_data( $result , "Produit variable qui n'a pas de produit par défaut" , '1003' );
             }
 
