@@ -448,8 +448,7 @@ class ItapAdmin {
             $couleurs = array_merge( $couleurs , $this->get_colors_from_settings() );
             foreach ( $attribute_variation as $attribute ) {
                 $product_tag = wc_get_attribute( $attribute['id'] );
-                $tag_name    = $product_tag->name;
-                if ( isset( $tag_name ) && strtolower( $tag_name ) === 'couleur' ) {
+                if ( isset( $product_tag->name ) && strtolower( $product_tag->name ) === 'couleur' ) {
                     $terms = wc_get_product_terms( $result['id'] , $attribute['name'] , array('fields' => 'slugs') );
                     foreach ( $terms as $term ) {
                         $term_slugify = $this->slugify( $term );
@@ -745,12 +744,14 @@ class ItapAdmin {
     }
 
     public function get_colors_from_settings() {
-        $colors = get_option( 'itap_settings' )['colors'];
-        if ( empty( $colors ) ) {
+        $options = get_option( 'itap_settings' );
+        if ( ! empty( $options['colors'] ) ) {
+            $colors = $options['colors'];
+            $colors = explode( '/' , $colors );
+            return array_map( 'trim' , $colors );
+        } else {
             return array();
         }
-        $colors = explode( '/' , $colors );
-        return array_map( 'trim' , $colors );
     }
 }
 
