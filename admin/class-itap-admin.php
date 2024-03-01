@@ -675,13 +675,21 @@ class ItapAdmin {
         if ( empty( $this->errors ) && count( $results ) > 0 ) {
             $this->errors = $this->itap_get_errors_from_products( $results );
         } else if ( count( $results ) > 0 ) {
-            $this->errors[] = $this->itap_get_errors_from_products( $results );
+            $this->errors = array_merge( $this->errors , $this->itap_get_errors_from_products( $results ) );
         }
+        $this->errors = array_filter( $this->errors , function ( $error ) {
+            return ! empty( $error );
+        } );
+
 
         if ( count( $this->errors ) < 300 && count( $results ) > 0 ) {
             return $this->itap_get_errors( $page_number + 1 );
         }
 
+        echo '<pre>';
+        print_r( $this->errors );
+        echo '</pre>';
+        die();
         usort( $this->errors , function ( $a , $b ) {
             return $a['color'] ? -1 : 1;
         } );
