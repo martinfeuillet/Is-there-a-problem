@@ -1,15 +1,13 @@
 <?php
 
-use JetBrains\PhpStorm\NoReturn;
-
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-seo-quantum.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-settings.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-page-automation.php';
 require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-function.php';
 
 class ItapAdmin {
-    public int      $lines        = 0;
-    public int      $nb_errors    = 0;
+
+    public array    $errors       = array();
     protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation' , 'help');
     private string  $plugin_name;
     private string  $version;
@@ -188,6 +186,10 @@ class ItapAdmin {
      * @param string $color color of the error
      */
     public function itap_display_data( array $result , string $problem , string $codeError , string $color = "" ) : array {
+        $author_name = isset( $_GET['author_name'] ) ? urldecode( $_GET['author_name'] ) : '';
+        if ( $author_name && $author_name !== $result['author_name'] ) {
+            return array();
+        }
         return array(
             'uniqId'      => $result['id'] . $codeError ,
             'id'          => $result['id'] ,
@@ -202,20 +204,24 @@ class ItapAdmin {
         );
     }
 
-
     /**
-     * get all the product and return it
+     * Get products with pagination and return them.
+     *
+     * @param int $page_number The page number for pagination, starting from 1.
+     * @return array The array of products.
      */
-    public function itap_get_all_infos_from_product() : array {
-        $args           = array(
+    public function itap_get_all_infos_from_product( int $page_number = 1 ) : array {
+        $products_per_page = 300;
+        $args              = array(
             'post_type'      => 'product' ,
             'post_status'    => 'publish' ,
-            'posts_per_page' => -1 ,
+            'posts_per_page' => $products_per_page ,
+            'paged'          => $page_number ,
             'orderby'        => 'id' ,
-            'order'          => 'ASC'
+            'order'          => 'ASC' ,
         );
-        $products       = get_posts( $args );
-        $products_array = array();
+        $products          = get_posts( $args );
+        $products_array    = array();
         foreach ( $products as $product ) {
             $product          = wc_get_product( $product->ID );
             $image_id         = get_post_thumbnail_id( $product->get_id() );
@@ -436,7 +442,6 @@ class ItapAdmin {
                 $errors[] = $this->itap_display_data( $result , "Produit variable qui n'a pas de produit par défaut" , '1003' );
             }
 
-            // check if the terms of attribute 'pa_couleur' or 'couleur are in the list of colors
             $attribute_variation = array();
             foreach ( $product->get_attributes() as $attribute ) {
                 if ( $attribute['variation'] ) {
@@ -456,6 +461,23 @@ class ItapAdmin {
                             $errors[] = $this->itap_display_data( $result , sprintf( "Produit variable dont la couleur %s ne fait pas partie des <div class='tooltip'>couleurs possibles<span class='tooltiptext'>%s</span></div>" , esc_html( $term_slugify ) , implode( ', ' , $couleurs ) ) , '1004' );
                         }
                     }
+                }
+            }
+
+            $variations = $product->get_children();
+            foreach ( $variations as $variation ) {
+                $product              = wc_get_product( $variation );
+                $meta                 = get_post_meta( $variation );
+                $variation_attributes = $product->get_attributes();
+                $false_var            = 0;
+                foreach ( $variation_attributes as $variation_attribute => $value ) {
+                    if ( ! $value ) {
+                        $false_var++;
+                    }
+                }
+                if ( $false_var ) {
+                    $errors[] = $this->itap_display_data( $result , "Produit variable dont une ou plusieurs de ses variations ne possède(nt) pas d'attributs" , '1029' , 'bm' );
+                    break;
                 }
             }
 
@@ -643,36 +665,46 @@ class ItapAdmin {
 
 
     /**
-     * Get the errors from all the functions that check the problems
-     * @param string $fn the function that check the problem
-     * @param array $results the array that contains all the products
+     * Get the errors from all the functions that check the problems.
+     * @param int $page_number the page number for pagination
      */
-    public function itap_get_errors( string $fn , array $results ) {
+    public function itap_get_errors( int $page_number = 1 ) : array {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'itap_archive';
-        $uniqIds    = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY id " , ARRAY_A );
-        $errors     = $this->$fn( $results );
-        if ( count( $errors ) > 0 ) {
-            foreach ( $errors as $error ) {
-                if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) ) {
-                    $this->nb_errors++;
-                    if ( $this->lines <= 300 ) {
-                        echo $this->itap_display_tab( $error );
-                        $this->lines++;
-                    }
-                }
+        $results = $this->itap_get_all_infos_from_product( $page_number );
+
+        if ( empty( $this->errors ) && count( $results ) > 0 ) {
+            $this->errors = $this->itap_get_errors_from_products( $results );
+        } else if ( count( $results ) > 0 ) {
+            $this->errors[] = $this->itap_get_errors_from_products( $results );
+        }
+
+        if ( count( $this->errors ) < 300 && count( $results ) > 0 ) {
+            return $this->itap_get_errors( $page_number + 1 );
+        }
+
+        usort( $this->errors , function ( $a , $b ) {
+            return $a['color'] ? -1 : 1;
+        } );
+
+        $table_name      = $wpdb->prefix . 'itap_archive';
+        $uniqIds         = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY id " , ARRAY_A );
+        $error_displayed = array();
+
+        foreach ( $this->errors as $error ) {
+            if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) ) {
+                $error_displayed[] = $this->itap_display_tab( $error );
             }
         }
-        update_option( 'total_integration_errors' , $this->lines );
+        update_option( 'total_integration_errors' , count( $error_displayed ) );
+        return $error_displayed;
     }
 
 
     /**
      * Display one table row every time there is an error
      * @param $error array that represents a product that has a problem
-     * @param string $danger the color when displaying the error
      */
-    public function itap_display_tab( array $error ) : string {
+    public function itap_display_tab( array $error ) : string|null {
         $allowed_html = array(
             'div'  => array(
                 'class' => array()
@@ -681,9 +713,11 @@ class ItapAdmin {
                 'class' => array()
             )
         );
+        $big_mistake  = $error['color'] === "bm";
+        // decode the author name
         ob_start();
         ?>
-        <tr <?php printf( 'style="%s"' , esc_attr( $error['color'] ? "background-color:" . $error['color'] . ";color:white;" : '' ) ); ?>>
+        <tr <?php printf( 'style="%s"' , esc_attr( $error['color'] ? "background-color:" . $error['color'] . ";color:white;" : '' ) ); ?> class="<?php echo $big_mistake ? "bm_animation" : '' ?>">
             <td><?php echo esc_html( $error['id'] ); ?></td>
             <td><?php echo esc_html( $error['title'] ); ?></td>
             <td><a target="_blank" <?php printf( 'style="%s"' , esc_attr( $error['color'] ? 'color:white' : '' ) ); ?>

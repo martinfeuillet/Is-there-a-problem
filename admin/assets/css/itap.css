@@ -459,3 +459,19 @@ svg path {
     font-weight: 800;
 
 }
+
+@keyframes colorChange {
+    0% {
+        background-color: black;
+    }
+    50% {
+        background-color: #ff0e0e;
+    }
+    100% {
+        background-color: black;
+    }
+}
+
+.bm_animation {
+    animation: colorChange 2s infinite;
+}

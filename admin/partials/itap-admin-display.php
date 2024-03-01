@@ -1,14 +1,6 @@
 <?php
 global $wpdb;
-$table_archive  = $wpdb->prefix . 'itap_archive';
-$count_archives = $wpdb->get_var( "SELECT COUNT(*) FROM $table_archive" );
-$admins         = get_users( array('role__in' => array('administrator' , 'shop_manager')) );
-$results        = $this->itap_get_all_infos_from_product();
-if ( ! empty( $_GET['author_name'] ) ) {
-    $results = array_filter( $results , function ( $result ) {
-        return $result['author_name'] == $_GET['author_name'];
-    } );
-}
+$admins = get_users( array('role__in' => array('administrator' , 'shop_manager')) );
 ?>
 
 <div class="wrap is-there-a-problem-container">
@@ -49,9 +41,11 @@ if ( ! empty( $_GET['author_name'] ) ) {
         </thead>
         <tbody class="tbody-plugin">
         <?php
-        $this->itap_get_errors( 'itap_get_errors_from_products' , $results );
+        foreach ( $this->itap_get_errors() as $error ) {
+            echo $error;
+        }
         ?>
         </tbody>
     </table>
-    <p>Nombre d'erreurs : <?php echo $this->nb_errors; ?></p>
+    <p>Nombre d'erreurs : <?php echo get_option( 'total_integration_errors' ) ?></p>
 </div>

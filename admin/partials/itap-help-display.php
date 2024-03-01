@@ -256,6 +256,11 @@
                         Avec l'apparition de l'IA, trop de contenu sont générés automatiquement. Google ne va pas tarder
                         à sanctionner les sites qui utilisent ce genre de contenu. Il faut donc réécrire le contenu.
                     </p>
+                    <p class="itap-error">- Produit variable dont une ou plusieurs de ses variations ne possède(nt) pas d'attributs</p>
+                    <p class="itap-answer">
+                        Quand vous générez une variations sur un produit variable, il faut absolument que celle ci aie des attributs.Exemple : Si votre produit est un t-shirt, vous pouvez avoir des attributs comme "couleur" et "taille". Si vous avez une variation qui n'a pas de
+                        couleur et/ou de taille determinée, vous devez la supprimer ou lui ajouter une couleur.
+                    </p>
                 </div>
             </li>
         </ul>

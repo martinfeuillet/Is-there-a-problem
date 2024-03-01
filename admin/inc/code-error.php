@@ -34,5 +34,6 @@ $codeErrorFile = array(
     '1026' => "Balise alt qui contient un format d'image (jpg , jpeg , gif, png , webp , svg), remplacer la par une vraie description de l'image" ,
     '1027' => "La description principale du produit doit être inférieure à 60 mots, enlevez du contenu" ,
     '1028' => "Le champ X contient un contenu généré entièrement par l'IA, réécrivez le" ,
+    '1029' => "Produit variable dont une ou plusieurs de ses variations ne possède(nt) pas d'attributs" ,
 
 );
