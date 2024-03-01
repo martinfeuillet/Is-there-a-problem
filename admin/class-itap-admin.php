@@ -685,11 +685,7 @@ class ItapAdmin {
         if ( count( $this->errors ) < 300 && count( $results ) > 0 ) {
             return $this->itap_get_errors( $page_number + 1 );
         }
-
-        echo '<pre>';
-        print_r( $this->errors );
-        echo '</pre>';
-        die();
+        
         usort( $this->errors , function ( $a , $b ) {
             return $a['color'] ? -1 : 1;
         } );
