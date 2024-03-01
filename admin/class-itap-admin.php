@@ -668,7 +668,7 @@ class ItapAdmin {
      * Get the errors from all the functions that check the problems.
      * @param int $page_number the page number for pagination
      */
-    public function itap_get_errors( int $page_number = 1 ) : array {
+    public function itap_get_errors( int $page_number = 1 ) {
         global $wpdb;
         $results = $this->itap_get_all_infos_from_product( $page_number );
 
@@ -685,7 +685,7 @@ class ItapAdmin {
         if ( count( $this->errors ) < 300 && count( $results ) > 0 ) {
             return $this->itap_get_errors( $page_number + 1 );
         }
-        
+
         usort( $this->errors , function ( $a , $b ) {
             return $a['color'] ? -1 : 1;
         } );
@@ -708,7 +708,7 @@ class ItapAdmin {
      * Display one table row every time there is an error
      * @param $error array that represents a product that has a problem
      */
-    public function itap_display_tab( array $error ) : string|null {
+    public function itap_display_tab( array $error ) {
         $allowed_html = array(
             'div'  => array(
                 'class' => array()
