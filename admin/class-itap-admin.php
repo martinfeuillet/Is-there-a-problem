@@ -424,7 +424,7 @@ class ItapAdmin {
     public function itap_get_errors_from_variable_products( array $result ) {
         $errors  = array();
         $product = wc_get_product( $result['id'] );
-        if ( ! $product ) {
+        if ( ! $product || $product->get_id() !== 79 ) {
             return array();
         }
         if ( $product->is_type( 'variable' ) ) {
@@ -466,9 +466,8 @@ class ItapAdmin {
 
             $variations = $product->get_children();
             foreach ( $variations as $variation ) {
-                $product              = wc_get_product( $variation );
-                $meta                 = get_post_meta( $variation );
-                $variation_attributes = $product->get_attributes();
+                $product_var          = wc_get_product( $variation );
+                $variation_attributes = $product_var->get_attributes();
                 $false_var            = 0;
                 foreach ( $variation_attributes as $variation_attribute => $value ) {
                     if ( ! $value ) {
