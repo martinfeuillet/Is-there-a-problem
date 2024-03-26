@@ -669,6 +669,7 @@ class ItapAdmin {
      */
     public function itap_get_errors( int $page_number = 1 ) {
         global $wpdb;
+        set_time_limit( 300 );
         $results = $this->itap_get_all_infos_from_product( $page_number );
 
         if ( empty( $this->errors ) && count( $results ) > 0 ) {
