@@ -7,7 +7,7 @@ require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-itap-helper-f
 
 class ItapAdmin {
 
-    public array    $errors       = array();
+    public string   $author_name  = "";
     protected array $plugin_pages = array('is_there_a_problem' , 'is_there_a_problem_seo' , 'is_there_a_problem_archive' , 'seo_quantum' , 'itap_reglages' , 'is_there_a_problem_automation' , 'help');
     private string  $plugin_name;
     private string  $version;
@@ -32,6 +32,7 @@ class ItapAdmin {
         add_action( 'wp_ajax_itap_save_settings' , array($ItapPageSettings , 'itap_save_settings') );
         add_action( 'wp_ajax_fix_primary_cat' , array($ItapPageAutomation , 'itap_fix_primary_cat') );
         add_action( 'wp_ajax_change_primary_category' , array($ItapPageAutomation , 'itap_change_primary_category') );
+        add_action( 'wp_ajax_get_data_in_page_is_there_a_problem' , array($this , 'itap_get_errors') );
 
     }
 
@@ -56,7 +57,7 @@ class ItapAdmin {
 
     /**
      *  Ajax function that send the archive to the database
-     * @return no-return
+     * @return void
      */
     public function itap_send_archive_to_db() {
         global $wpdb;
@@ -88,7 +89,7 @@ class ItapAdmin {
 
     /**
      * Ajax function that delete the archive from the database
-     * @return no-return
+     * @return void
      */
     public function itap_delete_archive() {
         global $wpdb;
@@ -104,15 +105,11 @@ class ItapAdmin {
      */
     public function itap_add_menu() : void {
         global $wpdb;
-        $total_integration_errors        = get_option( 'total_integration_errors' ) > 0 ? get_option( 'total_integration_errors' ) : 0;
-        $total_seo_errors                = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
-        $total_errors                    = $total_integration_errors + $total_seo_errors;
-        $total_integration_errors_string = $total_integration_errors == 300 ? '300+' : $total_integration_errors;
-        $total_seo_errors_string         = $total_seo_errors == 300 ? '300+' : $total_seo_errors;
-        $total_errors_string             = $total_errors == 600 ? '600+' : $total_errors;
+        $total_seo_errors        = get_option( 'count_seo_errors' ) ? get_option( 'count_seo_errors' ) : 0;
+        $total_seo_errors_string = $total_seo_errors == 300 ? '300+' : $total_seo_errors;
 
-        add_menu_page( 'Problems' , sprintf( "Problems <span class='awaiting-mod'>%s</span>" , $total_errors_string ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
-        add_submenu_page( 'is_there_a_problem' , 'Integration' , sprintf( "Integration <span class='awaiting-mod'>%s</span>" , $total_integration_errors_string ) , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
+        add_menu_page( 'Problems' , "Problems" , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') , 'dashicons-admin-site' , 100 );
+        add_submenu_page( 'is_there_a_problem' , 'Integration' , 'Integration' , 'publish_pages' , 'is_there_a_problem' , array($this , 'itap_page') );
         add_submenu_page( 'is_there_a_problem' , 'SEO' , sprintf( "SEO <span class='awaiting-mod'>%s</span>" , $total_seo_errors_string ) , 'publish_pages' , 'is_there_a_problem_seo' , array($this , 'itap_page_seo') );
         add_submenu_page( 'is_there_a_problem' , 'Automatisation' , 'Automatisation' , 'publish_pages' , 'is_there_a_problem_automation' , array($this , 'itap_page_automation') );
         add_submenu_page( 'is_there_a_problem' , 'Archives' , "Archives" , 'publish_pages' , 'is_there_a_problem_archive' , array($this , 'itap_page_archive') );
@@ -186,7 +183,7 @@ class ItapAdmin {
      * @param string $color color of the error
      */
     public function itap_display_data( array $result , string $problem , string $codeError , string $color = "" ) : array {
-        $author_name = isset( $_GET['author_name'] ) ? urldecode( $_GET['author_name'] ) : '';
+        $author_name = $this->author_name;
         if ( $author_name && $author_name !== $result['author_name'] ) {
             return array();
         }
@@ -210,8 +207,8 @@ class ItapAdmin {
      * @param int $page_number The page number for pagination, starting from 1.
      * @return array The array of products.
      */
-    public function itap_get_all_infos_from_product( int $page_number = 1 ) : array {
-        $products_per_page = 300;
+    public function itap_get_all_infos_from_product( int $page_number ) : array {
+        $products_per_page = 100;
         $args              = array(
             'post_type'      => 'product' ,
             'post_status'    => 'publish' ,
@@ -665,28 +662,36 @@ class ItapAdmin {
 
     /**
      * Get the errors from all the functions that check the problems.
-     * @param int $page_number the page number for pagination
      */
-    public function itap_get_errors( int $page_number = 1 ) {
+    public function itap_get_errors() {
         global $wpdb;
         set_time_limit( 300 );
+        $page_number = isset( $_POST['pageNumber'] ) ? $_POST['pageNumber'] : '';
+        $author_name = isset( $_POST['authorName'] ) ? $_POST['authorName'] : '';
+        if ( $author_name ) {
+            $this->author_name = $author_name;
+        }
+        if ( ! $page_number ) {
+            wp_send_json_error( "No page number provided" );
+        }
+
         $results = $this->itap_get_all_infos_from_product( $page_number );
 
-        if ( empty( $this->errors ) && count( $results ) > 0 ) {
-            $this->errors = $this->itap_get_errors_from_products( $results );
-        } else if ( count( $results ) > 0 ) {
-            $this->errors = array_merge( $this->errors , $this->itap_get_errors_from_products( $results ) );
+        if ( empty( $results ) ) {
+            wp_send_json_success( array(
+                'errors'   => array() ,
+                'continue' => false
+            ) );
+            wp_die();
         }
-        $this->errors = array_filter( $this->errors , function ( $error ) {
+
+        $errors = $this->itap_get_errors_from_products( $results );
+
+        $errors_filter = array_filter( $errors , function ( $error ) {
             return ! empty( $error );
         } );
 
-
-        if ( count( $this->errors ) < 300 && count( $results ) > 0 ) {
-            return $this->itap_get_errors( $page_number + 1 );
-        }
-
-        usort( $this->errors , function ( $a , $b ) {
+        usort( $errors_filter , function ( $a , $b ) {
             return $a['color'] ? -1 : 1;
         } );
 
@@ -694,13 +699,16 @@ class ItapAdmin {
         $uniqIds         = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY id " , ARRAY_A );
         $error_displayed = array();
 
-        foreach ( $this->errors as $error ) {
+        foreach ( $errors_filter as $error ) {
             if ( ! in_array( array('uniqId' => $error['uniqId']) , $uniqIds ) ) {
                 $error_displayed[] = $this->itap_display_tab( $error );
             }
         }
-        update_option( 'total_integration_errors' , count( $error_displayed ) );
-        return $error_displayed;
+        wp_send_json_success( array(
+            'errors'   => $error_displayed ,
+            'continue' => true
+        ) );
+        wp_die();
     }
 
 
@@ -709,7 +717,7 @@ class ItapAdmin {
      * @param $error array that represents a product that has a problem
      */
     public function itap_display_tab( array $error ) {
-        $allowed_html = array(
+        $allowed_html   = array(
             'div'  => array(
                 'class' => array()
             ) ,
@@ -717,11 +725,12 @@ class ItapAdmin {
                 'class' => array()
             )
         );
-        $big_mistake  = $error['color'] === "bm";
+        $big_mistake    = $error['color'] === "bm";
+        $middle_mistake = ! empty( $error['color'] ) ? 'mistake' : '';
         // decode the author name
         ob_start();
         ?>
-        <tr <?php printf( 'style="%s"' , esc_attr( $error['color'] ? "background-color:" . $error['color'] . ";color:white;" : '' ) ); ?> class="<?php echo $big_mistake ? "bm_animation" : '' ?>">
+        <tr <?php printf( 'style="%s"' , esc_attr( $error['color'] ? "background-color:" . $error['color'] . ";color:white;" : '' ) ); ?> class="<?php echo $big_mistake ? "bm_animation" : '' ?> <?php echo $middle_mistake ?>">
             <td><?php echo esc_html( $error['id'] ); ?></td>
             <td><?php echo esc_html( $error['title'] ); ?></td>
             <td><a target="_blank" <?php printf( 'style="%s"' , esc_attr( $error['color'] ? 'color:white' : '' ) ); ?>

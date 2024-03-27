@@ -1,12 +1,13 @@
 <?php
 global $wpdb;
-$admins = get_users( array('role__in' => array('administrator' , 'shop_manager')) );
+$admins      = get_users( array('role__in' => array('administrator' , 'shop_manager')) );
+$author_name = isset( $_GET['author_name'] ) ? urldecode( $_GET['author_name'] ) : '';
 ?>
 
 <div class="wrap is-there-a-problem-container">
     <p>Problèmes d'intégration</p>
     <div class="form-tri">
-        <p>Trier par intégrateur</p>
+        <label for="author_name">Trier par intégrateur</label>
         <form action="?page=is_there_a_problem" method="GET">
             <div class="bloc-form">
                 <div>
@@ -14,11 +15,11 @@ $admins = get_users( array('role__in' => array('administrator' , 'shop_manager')
                     <select name="author_name" id="author_name">
                         <option value="">choisissez votre nom d'utilisateur</option>
                         <?php
-                        //get all admin and shop manager
                         foreach ( $admins as $user ) {
+                            $selected = $author_name === $user->display_name ? 'selected' : '';
                             ?>
                             <option value="<?php echo esc_attr( $user->display_name ); ?>"
-                                    name=""><?php echo esc_attr( $user->display_name ); ?></option>
+                                    name="" <?php echo $selected ?>><?php echo esc_attr( $user->display_name ); ?></option>
                             <?php
                         }
                         ?>
@@ -28,6 +29,11 @@ $admins = get_users( array('role__in' => array('administrator' , 'shop_manager')
             </div>
         </form>
     </div>
+    <div class="loader-div">
+        <span class="loader"></span>
+        <p class="search-error" style="margin-right: 1rem">Recherche d'erreurs...</p>
+    </div>
+    <p class="nbr-error">Nombre d'erreurs : <span class="nbr">0</span></p>
     <table class="table-plugin">
         <thead>
         <tr class="thead-plugin">
@@ -39,13 +45,7 @@ $admins = get_users( array('role__in' => array('administrator' , 'shop_manager')
             <th class="thead-plugin-little">archiver</th>
         </tr>
         </thead>
-        <tbody class="tbody-plugin">
-        <?php
-        foreach ( $this->itap_get_errors() as $error ) {
-            echo $error;
-        }
-        ?>
+        <tbody class="tbody-plugin" id="display-errors">
         </tbody>
     </table>
-    <p>Nombre d'erreurs : <?php echo get_option( 'total_integration_errors' ) ?></p>
 </div>
