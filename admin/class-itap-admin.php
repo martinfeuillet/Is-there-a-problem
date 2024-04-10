@@ -528,12 +528,8 @@ class ItapAdmin {
      * @param array $result the product
      */
     public function itap_get_errors_from_images_that_arent_stocked_in_wordpress( array $result ) {
-        $errors   = array();
-        $image_id = get_post_thumbnail_id( $result['id'] );
-        if ( $result['id'] != 16 ) {
-            return $errors;
-        }
-
+        $errors    = array();
+        $image_id  = get_post_thumbnail_id( $result['id'] );
         $image_url = wp_get_attachment_url( $image_id );
 
         if ( $image_url && ! $this->is_internal_url( $image_url ) ) {
@@ -740,7 +736,7 @@ class ItapAdmin {
             // Check for trailing space or non-breaking space
             $last_character = mb_substr( $description_text , -1 );
             if ( $last_character === ' ' || $last_character === "\xC2\xA0" || $last_character === "\xA0" ) {
-                $errors[] = $this->itap_display_data( $result , "Le champ $description_name de ce produit se termine par un espace ou un &nbsp;, merci de le supprimer" , '1033' );
+                $errors[] = $this->itap_display_data( $result , "Le champ $description_name de ce produit se termine par un espace, merci de le supprimer" , '1033' );
             }
         }
         return $errors;
