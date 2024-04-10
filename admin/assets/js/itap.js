@@ -111,7 +111,6 @@
         function saveSettings() {
             const btnSubmit = $("#itap_submit");
             btnSubmit.on("click", () => {
-                console.log(data)
                 $.ajax({
                     type: "POST",
                     url: my_ajax_object.ajaxurl,

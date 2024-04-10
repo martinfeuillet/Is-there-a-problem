@@ -250,7 +250,9 @@ class ItapAdmin {
                 "itap_dont_allow_variation_if_only_one_attr_is_set_on_couleur" ,
                 "itap_get_errors_from_descriptions" ,
                 "itap_get_errors_from_missing_meta_fields_images" ,
-                "get_errors_from_too_much_ia_in_content"
+                "get_errors_from_too_much_ia_in_content" ,
+                "itap_get_errors_from_images_that_arent_stocked_in_wordpress" ,
+                "itap_get_errors_if_there_are_spaces_after_the_block_text"
             );
             foreach ( $functions as $function ) {
                 foreach ( $this->$function( $result ) as $occurence ) {
@@ -522,6 +524,73 @@ class ItapAdmin {
     }
 
     /**
+     * Check if there are images that comes from url
+     * @param array $result the product
+     */
+    public function itap_get_errors_from_images_that_arent_stocked_in_wordpress( array $result ) {
+        $errors   = array();
+        $image_id = get_post_thumbnail_id( $result['id'] );
+
+        $image_url = wp_get_attachment_url( $image_id );
+
+        if ( $image_url && ! $this->is_internal_url( $image_url ) ) {
+            $errors[] = $this->itap_display_data( $result , "L'image du produit n'est pas stockée sur le serveur, veuillez la télécharger et l'uploader sur le serveur" , '1030' , "#ff0e0e" );
+        }
+
+        // get all gallery images
+        $gallery_images = get_post_meta( $result['id'] , '_product_image_gallery' , true );
+        if ( ! empty( $gallery_images ) ) {
+            foreach ( $gallery_images as $gallery_image ) {
+                $gallery_image_url = wp_get_attachment_url( $gallery_image );
+                if ( $image_url && ! $this->is_internal_url( $gallery_image_url ) ) {
+                    $errors[] = $this->itap_display_data( $result , "une image de la galerie du produit n'est pas stockée sur le serveur, veuillez la télécharger et l'uploader sur le serveur" , '1031' , "#ff0e0e" );
+                    break;
+                }
+            }
+        }
+
+        $itap_settings      = get_option( 'itap_settings' );
+        $images_meta_fields = array();
+        if ( ! $itap_settings ) {
+            return $errors;
+        }
+        if ( isset( $itap_settings['itap_img_1'] ) ) {
+            $images_meta_fields[] = $itap_settings['itap_img_1_label'];
+        }
+        if ( isset( $itap_settings['itap_img_2'] ) ) {
+            $images_meta_fields[] = $itap_settings['itap_img_2_label'];
+        }
+        if ( isset( $itap_settings['itap_img_3'] ) ) {
+            $images_meta_fields[] = $itap_settings['itap_img_3_label'];
+        }
+
+        $images_meta_fields = array_filter( $images_meta_fields );
+        foreach ( $images_meta_fields as $label ) {
+            $image_id  = get_post_meta( $result['id'] , $label , true );
+            $image_url = wp_get_attachment_url( $image_id );
+            if ( $image_url && ! $this->is_internal_url( $image_url ) ) {
+                $errors[] = $this->itap_display_data( $result , "L'image du champ meta field $label n'est pas stockée sur le serveur, veuillez la télécharger et l'uploader sur le serveur" , '1032' , "#ff0e0e" );
+                break;
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Determine if a URL is internal (belongs to this WordPress installation) or external.
+     * @param string $url The URL to check.
+     * @return bool True if the URL is internal, false otherwise.
+     */
+    private function is_internal_url( $url ) {
+        $url_host = parse_url( $url , PHP_URL_HOST );
+
+        $site_host = parse_url( get_site_url() , PHP_URL_HOST );
+
+        return $url_host == $site_host;
+    }
+
+    /**
      * IN
      * get errors from rank math product description who hasn't been filled
      * @param array $results product that we want to check
@@ -637,6 +706,45 @@ class ItapAdmin {
 
         return $errors;
     }
+
+    /**
+     * @param array $result
+     * @return array  of all errors
+     */
+    public function itap_get_errors_if_there_are_spaces_after_the_block_text( array $result ) {
+        $errors = array();
+        if ( $result['id'] != 16 ) {
+            return $errors;
+        }
+        $product           = wc_get_product( $result['id'] );
+        $description1      = $product->get_meta( 'description-1' ) ?? $product->get_meta( 'description1' ) ?? null;
+        $description2      = $product->get_meta( 'description-2' ) ?? $product->get_meta( 'description2' ) ?? null;
+        $description3      = $product->get_meta( 'description-3' ) ?? $product->get_meta( 'description3' ) ?? null;
+        $main_description  = $product->get_description();
+        $short_description = $product->get_short_description();
+        $all_description   = array(
+            "description-1"          => $description1 ,
+            'description-2'          => $description2 ,
+            'description-3'          => $description3 ,
+            'description principale' => $main_description ,
+            'description courte'     => $short_description
+        );
+        foreach ( $all_description as $description_name => $description ) {
+            if ( ! $description ) {
+                continue;
+            }
+            // Remove HTML tags and trailing newlines, then decode HTML entities
+            $description_text = html_entity_decode( rtrim( strip_tags( $description ) , "\n" ) );
+
+            // Check for trailing space or non-breaking space
+            $last_character = mb_substr( $description_text , -1 );
+            if ( $last_character === ' ' || $last_character === "\xC2\xA0" || $last_character === "\xA0" ) {
+                $errors[] = $this->itap_display_data( $result , "Le champ $description_name de ce produit se termine par un espace ou un &nbsp;, merci de le supprimer" , '1033' );
+            }
+        }
+        return $errors;
+    }
+
 
     /**
      * IN
