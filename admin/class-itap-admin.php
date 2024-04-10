@@ -530,6 +530,9 @@ class ItapAdmin {
     public function itap_get_errors_from_images_that_arent_stocked_in_wordpress( array $result ) {
         $errors   = array();
         $image_id = get_post_thumbnail_id( $result['id'] );
+        if ( $result['id'] != 16 ) {
+            return $errors;
+        }
 
         $image_url = wp_get_attachment_url( $image_id );
 
@@ -540,8 +543,9 @@ class ItapAdmin {
         // get all gallery images
         $gallery_images = get_post_meta( $result['id'] , '_product_image_gallery' , true );
         if ( ! empty( $gallery_images ) ) {
-            foreach ( $gallery_images as $gallery_image ) {
-                $gallery_image_url = wp_get_attachment_url( $gallery_image );
+            $gallery_image_ids = explode( ',' , $gallery_images );
+            foreach ( $gallery_image_ids as $gallery_image_id ) {
+                $gallery_image_url = wp_get_attachment_url( $gallery_image_id );
                 if ( $image_url && ! $this->is_internal_url( $gallery_image_url ) ) {
                     $errors[] = $this->itap_display_data( $result , "une image de la galerie du produit n'est pas stockée sur le serveur, veuillez la télécharger et l'uploader sur le serveur" , '1031' , "#ff0e0e" );
                     break;
@@ -712,10 +716,7 @@ class ItapAdmin {
      * @return array  of all errors
      */
     public function itap_get_errors_if_there_are_spaces_after_the_block_text( array $result ) {
-        $errors = array();
-        if ( $result['id'] != 16 ) {
-            return $errors;
-        }
+        $errors            = array();
         $product           = wc_get_product( $result['id'] );
         $description1      = $product->get_meta( 'description-1' ) ?? $product->get_meta( 'description1' ) ?? null;
         $description2      = $product->get_meta( 'description-2' ) ?? $product->get_meta( 'description2' ) ?? null;
