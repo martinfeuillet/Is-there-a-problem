@@ -574,6 +574,21 @@ class ItapAdmin {
             }
         }
 
+        // if the product is variable, loop through all the variations and check if the images are stored on the server
+        $product = wc_get_product( $result['id'] );
+        if ( $product->is_type( 'variable' ) ) {
+            $variations = $product->get_children();
+            foreach ( $variations as $variation ) {
+                $variation_product   = wc_get_product( $variation );
+                $variation_image_id  = get_post_thumbnail_id( $variation_product->get_id() );
+                $variation_image_url = wp_get_attachment_url( $variation_image_id );
+                if ( $variation_image_url && ! $this->is_internal_url( $variation_image_url ) ) {
+                    $errors[] = $this->itap_display_data( $result , "Produit variable dont au moins une des variations contient une image qui n'est pas stockée sur WordPress, veuillez la télécharger et l'uploader sur le serveur" , '1034' , "#ff0e0e" );
+                    break;
+                }
+            }
+        }
+
         return $errors;
     }
 
@@ -730,15 +745,19 @@ class ItapAdmin {
             if ( ! $description ) {
                 continue;
             }
-            // Remove HTML tags and trailing newlines, then decode HTML entities
-            $description_text = html_entity_decode( rtrim( strip_tags( $description ) , "\n" ) );
+            $regex               = '/<p>\s*<\/p>/';
+            $clean_content       = preg_replace( $regex , '' , $description );
+            $regex               = '/<\/p>\s*<\/p>\s*/';
+            $super_clean_content = preg_replace( $regex , '' , $clean_content );
 
-            // Check for trailing space or non-breaking space
-            $last_character = mb_substr( $description_text , -1 );
+            $description_text = html_entity_decode( rtrim( strip_tags( $super_clean_content ) , "\n" ) );
+            $last_character   = mb_substr( $description_text , -1 );
+
             if ( $last_character === ' ' || $last_character === "\xC2\xA0" || $last_character === "\xA0" ) {
                 $errors[] = $this->itap_display_data( $result , "Le champ $description_name de ce produit se termine par un espace, merci de le supprimer" , '1033' );
             }
         }
+        
         return $errors;
     }
 

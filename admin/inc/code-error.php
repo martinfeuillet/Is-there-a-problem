@@ -39,5 +39,5 @@ $codeErrorFile = array(
     '1031' => "Une ou plusieurs images de la galerie produit ne sont pas stockées sur le serveur, veuillez les télécharger et les uploader sur le serveur" ,
     '1032' => "L'image d'un champ metafield image n'est pas stockée sur le serveur, veuillez la télécharger et l'uploader sur le serveur" ,
     '1033' => "Un des champs de ce produit se termine par un espace, merci de le supprimer" ,
-
+    '1034' => "Produit variable dont au moins une des variations contient une image qui n'est pas stockée sur WordPress, veuillez la télécharger et l'uploader sur le serveur" ,
 );
