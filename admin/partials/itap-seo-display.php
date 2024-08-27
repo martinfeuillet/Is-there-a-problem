@@ -7,7 +7,7 @@
 
 global $wpdb;
 $table_archive  = $wpdb->prefix . 'itap_seo_archive';
-$count_archives = $wpdb->get_var( $wpdb->prepare( 'SELECT COUNT(*) FROM %s', $table_archive ) );
+$count_archives = $wpdb->get_var( "SELECT COUNT(*) FROM $table_archive" ); // phpcs:ignore
 ?>
 
 <div class="wrap is-there-a-problem-container">

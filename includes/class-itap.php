@@ -117,7 +117,7 @@ class Itap {
 	 */
 	private function define_admin_hooks() {
 
-		$plugin_admin = new ItapAdmin( $this->get_plugin_name(), $this->get_version(), new ItapPageSettings(), new ItapPageAutomation(), new ItapPageSeo(), new ItapPageArchive() );
+		$plugin_admin = new ItapAdmin( $this->get_plugin_name(), $this->get_version(), new ItapPageSettings() );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 	}

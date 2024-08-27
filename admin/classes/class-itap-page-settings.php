@@ -47,6 +47,6 @@ class ItapPageSettings {
 	 * Display the settings page html
 	 */
 	public function itap_partials_settings(): void {
-		require_once plugin_dir_path( __DIR__ ) . 'admin/partials/itap-settings-display.php';
+		require_once plugin_dir_path( __DIR__ ) . 'partials/itap-settings-display.php';
 	}
 }

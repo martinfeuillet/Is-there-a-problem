@@ -47,43 +47,16 @@ class ItapAdmin extends ItapHelperFunction {
 	private ItapPageSettings $itap_page_settings;
 
 	/**
-	 * The automation part of the plugin.
-	 *
-	 * @var ItapPageAutomation
-	 */
-	private ItapPageAutomation $itap_page_automation;
-
-	/**
-	 * The seo part of the plugin.
-	 *
-	 * @var ItapPageSeo
-	 */
-	private ItapPageSeo $itap_page_seo;
-
-	/**
-	 * The archive part of the plugin.
-	 *
-	 * @var ItapPageArchive
-	 */
-	private ItapPageArchive $itap_page_archive;
-
-	/**
 	 * Class constructor.
 	 *
-	 * @param string             $plugin_name The name of the plugin.
-	 * @param string             $version The version of the plugin.
-	 * @param ItapPageSettings   $itap_page_settings The settings part of the plugin.
-	 * @param ItapPageAutomation $itap_page_automation The automation part of the plugin.
-	 * @param ItapPageSeo        $itap_page_seo The seo part of the plugin.
-	 * @param ItapPageArchive    $itap_page_archive The archive part of the plugin.
+	 * @param string           $plugin_name The name of the plugin.
+	 * @param string           $version The version of the plugin.
+	 * @param ItapPageSettings $itap_page_settings The settings part of the plugin.
 	 */
-	public function __construct( string $plugin_name, string $version, ItapPageSettings $itap_page_settings, ItapPageAutomation $itap_page_automation, ItapPageSeo $itap_page_seo, ItapPageArchive $itap_page_archive ) {
-		$this->plugin_name          = $plugin_name;
-		$this->version              = $version;
-		$this->itap_page_settings   = $itap_page_settings;
-		$this->itap_page_automation = $itap_page_automation;
-		$this->itap_page_seo        = $itap_page_seo;
-		$this->itap_page_archive    = $itap_page_archive;
+	public function __construct( string $plugin_name, string $version, ItapPageSettings $itap_page_settings ) {
+		$this->plugin_name        = $plugin_name;
+		$this->version            = $version;
+		$this->itap_page_settings = $itap_page_settings;
 
 		add_action( 'admin_menu', array( $this, 'itap_add_menu' ) );
 
@@ -94,11 +67,12 @@ class ItapAdmin extends ItapHelperFunction {
 	 * Ajax hooks for the admin part of the plugin.
 	 */
 	public function ajax_hooks() {
+		$itap_page_automation = new ItapPageAutomation();
 		add_action( 'wp_ajax_get_checkbox_value', array( $this, 'itap_send_archive_to_db' ) );
 		add_action( 'wp_ajax_delete_checkbox_value', array( $this, 'itap_delete_archive' ) );
 		add_action( 'wp_ajax_itap_save_settings', array( $this->itap_page_settings, 'itap_save_settings' ) );
-		add_action( 'wp_ajax_fix_primary_cat', array( $this->itap_page_automation, 'itap_fix_primary_cat' ) );
-		add_action( 'wp_ajax_change_primary_category', array( $this->itap_page_automation, 'itap_change_primary_category' ) );
+		add_action( 'wp_ajax_fix_primary_cat', array( $itap_page_automation, 'itap_fix_primary_cat' ) );
+		add_action( 'wp_ajax_change_primary_category', array( $itap_page_automation, 'itap_change_primary_category' ) );
 		add_action( 'wp_ajax_get_data_in_page_is_there_a_problem', array( $this, 'itap_get_errors' ) );
 	}
 
@@ -172,14 +146,16 @@ class ItapAdmin extends ItapHelperFunction {
 	 * Display the SEO page
 	 */
 	public function itap_page_seo(): void {
-		$this->itap_page_seo->itap_partials_seo();
+		$itap_page_seo = new ItapPageSeo();
+		$itap_page_seo->itap_partials_seo();
 	}
 
 	/**
 	 * Display the Automation page
 	 */
 	public function itap_page_automation(): void {
-		$this->itap_page_automation->itap_partials_automation();
+		$itap_page_automation = new ItapPageAutomation();
+		$itap_page_automation->itap_partials_automation();
 	}
 
 
@@ -187,7 +163,8 @@ class ItapAdmin extends ItapHelperFunction {
 	 * Display the Archive page
 	 */
 	public function itap_page_archive() {
-		$this->itap_page_archive->itap_partials_archive();
+		$itap_page_archive = new ItapPageArchive();
+		$itap_page_archive->itap_partials_archive();
 	}
 
 	/**
@@ -558,7 +535,7 @@ class ItapAdmin extends ItapHelperFunction {
 			$errors[] = $this->itap_display_data( $result, 'Produit sans images', '1008' );
 		} else {
 			$image_metadata = get_post_meta( $image_id, '_wp_attachment_metadata', 'true' );
-			if ( ! $image_metadata ) {
+			if ( ! $image_metadata || ! isset( $image_metadata['file'] ) || ! isset( $image_metadata['sizes'] ) ) {
 				return $errors;
 			}
 			$upload_dir = wp_upload_dir()['basedir'];
@@ -868,7 +845,7 @@ class ItapAdmin extends ItapHelperFunction {
 		);
 
 		$table_name      = $wpdb->prefix . 'itap_archive';
-		$uniq_ids        = $wpdb->get_results( $wpdb->prepare( 'SELECT uniqId FROM %s ORDER BY id ', $table_name ), ARRAY_A );
+		$uniq_ids        = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY id" ); // phpcs:ignore
 		$error_displayed = array();
 
 		foreach ( $errors_filter as $error ) {

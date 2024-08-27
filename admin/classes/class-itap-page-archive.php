@@ -1,7 +1,7 @@
 <?php // phpcs:ignore
 
 
-require_once plugin_dir_path( __FILE__ ) . 'inc/code-error.php';
+require_once plugin_dir_path( __DIR__ ) . 'inc/code-error.php';
 
 /**
  * This file is used to show all the problems that have been archived
@@ -11,41 +11,34 @@ require_once plugin_dir_path( __FILE__ ) . 'inc/code-error.php';
 class ItapPageArchive {
 
 	/**
-	 * Constructor
-	 */
-	public function __construct() {
-		$this->itap_partials_archive();
-	}
-
-	/**
 	 * Display the archive html
 	 */
 	public function itap_partials_archive(): void {
 		if ( isset( $_GET['page'] ) && 'is_there_a_problem_archive' === $_GET['page'] ) {
 			?>
-<div class="wrap is-there-a-problem-container">
-	<p>Problèmes archivés</p>
-	<table class="table-plugin">
-		<thead>
-		<tr class="thead-plugin">
-			<th class="thead-plugin-little">Id Produit</th>
-			<th class="thead-plugin-middle">Nom Produit</th>
-			<th class="thead-plugin-little">Url Produit</th>
-			<th class="thead-plugin-big">Problème remonté</th>
-			<th class="thead-plugin-little">Nom intégrateur</th>
-			<th class="thead-plugin-little">archiver</th>
-		</tr>
-		</thead>
-		<tbody class="tbody-plugin">
-			<?php
-			$archive = $this->itap_get_archive_from_database();
-			foreach ( $archive as $error ) {
-				echo wp_kses_post( $this->itap_archive_display_tab( $error ) );
-			}
-			?>
-		</tbody>
-	</table>
-</div>
+			<div class="wrap is-there-a-problem-container">
+				<p>Problèmes archivés</p>
+				<table class="table-plugin">
+					<thead>
+					<tr class="thead-plugin">
+						<th class="thead-plugin-little">Id Produit</th>
+						<th class="thead-plugin-middle">Nom Produit</th>
+						<th class="thead-plugin-little">Url Produit</th>
+						<th class="thead-plugin-big">Problème remonté</th>
+						<th class="thead-plugin-little">Nom intégrateur</th>
+						<th class="thead-plugin-little">archiver</th>
+					</tr>
+					</thead>
+					<tbody class="tbody-plugin">
+						<?php
+						$archive = $this->itap_get_archive_from_database();
+						foreach ( $archive as $error ) {
+							echo wp_kses_post( $this->itap_archive_display_tab( $error ) );
+						}
+						?>
+					</tbody>
+				</table>
+			</div>
 			<?php
 		}
 	}
@@ -86,7 +79,7 @@ class ItapPageArchive {
 		global $wpdb;
 		include plugin_dir_path( __FILE__ ) . 'inc/code-error.php';
 		$table_name   = $wpdb->prefix . 'itap_archive';
-		$results      = $wpdb->get_results( $wpdb->prepare( 'SELECT * FROM %s', $table_name ), ARRAY_A );
+		$results      = $wpdb->get_results( "SELECT * FROM $table_name", ARRAY_A); // phpcs:ignore
 		$info_product = array();
 		foreach ( $results as $result => $value ) {
 			$uniq_id    = $value['uniqId'];

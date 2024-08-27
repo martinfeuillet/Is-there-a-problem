@@ -40,7 +40,7 @@ class ItapPageAutomation {
 	 * Display the automation page html.
 	 */
 	public function itap_partials_automation(): void {
-		require_once plugin_dir_path( __FILE__ ) . 'partials/itap-automation-display.php';
+		require_once plugin_dir_path( __DIR__ ) . 'partials/itap-automation-display.php';
 	}
 
 	/**

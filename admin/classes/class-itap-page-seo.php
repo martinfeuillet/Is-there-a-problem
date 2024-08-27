@@ -23,18 +23,11 @@ class ItapPageSeo extends ItapHelperFunction {
 
 
 	/**
-	 * ItapPageSeo constructor.
-	 */
-	public function __construct() {
-		$this->itap_partials_seo();
-	}
-
-	/**
 	 * Display html for seo page and count errors.
 	 */
 	public function itap_partials_seo(): void {
 		if ( isset( $_GET['page'] ) && 'is_there_a_problem_seo' === $_GET['page'] ) {
-			require_once plugin_dir_path( __DIR__ ) . 'admin/partials/itap-seo-display.php';
+			require_once plugin_dir_path( __DIR__ ) . 'partials/itap-seo-display.php';
 		}
 	}
 
@@ -707,7 +700,7 @@ class ItapPageSeo extends ItapHelperFunction {
 	public function get_errors_from_seo( callable $fn_errors, callable $fn_display ): void {
 		global $wpdb;
 		$table_name = $wpdb->prefix . 'itap_seo_archive';
-		$uniq_ids   = $wpdb->get_results( $wpdb->prepare( 'SELECT uniqId FROM %s ORDER BY uniqId', $table_name ), ARRAY_A );
+		$uniq_ids   = $wpdb->get_results( "SELECT uniqId FROM $table_name ORDER BY uniqId" ); // phpcs:ignore
 		$uniq_ids   = array_column( $uniq_ids, 'uniqId' );
 		$errors     = $fn_errors();
 		foreach ( $errors as $error ) {
